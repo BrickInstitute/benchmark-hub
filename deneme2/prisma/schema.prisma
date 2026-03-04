@@ -1,0 +1,203 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Benchmark {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  sourceUrl   String?
+  sourceSite  String?
+
+  imagePath     String
+  thumbnailPath String?
+
+  width    Int?
+  height   Int?
+  fileSize Int?
+  format   String?
+
+  dominantColors Json?
+  typography     Json?
+  layoutType     String?
+  htmlContent    String?  @db.Text
+
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String
+  tags       TagOnBenchmark[]
+
+  scores       Score[]
+  overallScore Float?
+
+  status BenchmarkStatus @default(ACTIVE)
+
+  scrapingJob   ScrapingJob? @relation(fields: [scrapingJobId], references: [id])
+  scrapingJobId String?
+  isUploaded    Boolean      @default(false)
+  sourceHash    String?      @unique // For duplicate detection (hash of sourceUrl or image)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([overallScore])
+  @@index([sourceSite])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum BenchmarkStatus {
+  ACTIVE
+  ARCHIVED
+  PENDING_REVIEW
+  FLAGGED
+}
+
+model Category {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  slug        String      @unique
+  description String?
+  icon        String?
+  benchmarks  Benchmark[]
+  createdAt   DateTime    @default(now())
+}
+
+model Tag {
+  id         String           @id @default(cuid())
+  name       String           @unique
+  slug       String           @unique
+  benchmarks TagOnBenchmark[]
+  createdAt  DateTime         @default(now())
+}
+
+model TagOnBenchmark {
+  benchmark   Benchmark @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)
+  benchmarkId String
+  tag         Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId       String
+
+  @@id([benchmarkId, tagId])
+}
+
+model Score {
+  id          String    @id @default(cuid())
+  benchmark   Benchmark @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)
+  benchmarkId String
+
+  visualConsistency  Float
+  layoutQuality      Float
+  typography         Float
+  colorHarmony       Float
+  whitespaceUsage    Float
+  accessibilityScore Float
+
+  overallScore Float
+
+  feedback     String
+  strengths    Json?
+  improvements Json?
+
+  aiProvider    String
+  aiModel       String
+  promptVersion String
+  rawResponse   Json?
+
+  inputTokens  Int?
+  outputTokens Int?
+
+  createdAt DateTime @default(now())
+
+  @@index([benchmarkId])
+  @@index([overallScore])
+  @@index([createdAt])
+}
+
+model ScrapingJob {
+  id         String    @id @default(cuid())
+  targetUrl  String
+  targetSite String
+  status     JobStatus @default(PENDING)
+
+  config   Json?
+  maxItems Int   @default(50)
+
+  totalItems     Int @default(0)
+  processedItems Int @default(0)
+  failedItems    Int @default(0)
+
+  benchmarks Benchmark[]
+  errorLog   Json?
+
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum JobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model ScrapingSource {
+  id          String  @id @default(cuid())
+  name        String
+  url         String
+  site        String  // "mobbin", "dribbble", "landingfolio", "dribbble-api", "generic"
+  enabled     Boolean @default(true)
+  maxItems    Int     @default(20)
+  categorySlug String? // auto-assign to this category
+  schedule    String  @default("daily") // "daily", "weekly", "manual"
+
+  lastRunAt   DateTime?
+  lastRunStatus String? // "success", "failed", "partial"
+  totalCollected Int   @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  discoveredBy    String?  // "manual" | "auto-discovery"
+  discoveryRunId  String?  // Which discovery run found this
+
+  @@index([enabled])
+  @@index([schedule])
+}
+
+model DiscoveryRun {
+  id            String   @id @default(cuid())
+  strategy      String
+  category      String
+
+  suggestedUrls Json
+  validatedUrls Json?
+  addedSources  Int      @default(0)
+
+  totalSuggested Int     @default(0)
+  totalValidated Int     @default(0)
+  totalAdded     Int     @default(0)
+
+  aiModel       String
+  inputTokens   Int?
+  outputTokens  Int?
+
+  status        String   @default("pending")
+  errorLog      String?
+
+  createdAt     DateTime @default(now())
+  completedAt   DateTime?
+
+  @@index([status])
+  @@index([createdAt])
+}
