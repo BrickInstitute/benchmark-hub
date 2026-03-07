@@ -76,10 +76,10 @@ COPY --from=deps /app/node_modules/playwright-core ./node_modules/playwright-cor
 RUN mkdir -p /app/data/uploads && chown -R nextjs:nodejs /app/data
 RUN mkdir -p /app/.next/cache && chown -R nextjs:nodejs /app/.next/cache
 
-USER nextjs
 ENV HOME=/home/nextjs
 
 EXPOSE ${PORT:-3000}
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["sh", "-c", "node node_modules/prisma/build/index.js db push --skip-generate && node prisma/seed.mjs && node server.js"]
+# Entrypoint script: fix volume permissions then run as nextjs
+CMD ["sh", "-c", "mkdir -p /app/data/uploads/benchmarks && chown -R 1001:1001 /app/data && exec su -s /bin/sh -c 'export HOME=/home/nextjs && node node_modules/prisma/build/index.js db push --skip-generate && node prisma/seed.mjs && node server.js' nextjs"]

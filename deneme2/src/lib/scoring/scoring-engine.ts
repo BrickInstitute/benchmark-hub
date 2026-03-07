@@ -70,7 +70,7 @@ export async function scoreBenchmark(
       strengths: scoringResult.strengths,
       improvements: scoringResult.improvements,
       aiProvider: provider,
-      aiModel: model || process.env.AI_MODEL || "claude-sonnet-4-20250514",
+      aiModel: model || process.env.AI_MODEL || "claude-haiku-4-5-20251001",
       promptVersion: CURRENT_PROMPT_VERSION,
       rawResponse: { content },
       inputTokens,

@@ -6,7 +6,8 @@ export class LocalStorage implements StorageProvider {
   private uploadDir: string;
 
   constructor() {
-    this.uploadDir = process.env.UPLOAD_DIR || "./public/uploads";
+    // Use /app/data on Railway (persistent volume), ./public/uploads locally
+    this.uploadDir = process.env.UPLOAD_DIR || (process.env.RAILWAY_ENVIRONMENT ? "/app/data/uploads" : "./public/uploads");
   }
 
   async save(key: string, data: Buffer, _contentType: string): Promise<string> {

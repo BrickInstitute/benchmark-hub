@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatScore } from "@/lib/utils";
 
@@ -34,17 +35,29 @@ export function BenchmarkCard({
     ? `/api/files/${thumbnailPath}`
     : `/api/files/${imagePath}`;
 
+  const [imgError, setImgError] = useState(false);
+
   return (
     <Link href={`/benchmarks/${id}`}>
       <div className="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200">
         <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
-          <Image
-            src={imageUrl}
-            alt={title}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
+          {imgError ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 text-gray-400">
+              <svg className="w-10 h-10 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span className="text-xs">Gorsel yuklenemiyor</span>
+            </div>
+          ) : (
+            <Image
+              src={imageUrl}
+              alt={title}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              onError={() => setImgError(true)}
+            />
+          )}
           {overallScore !== null && (
             <div className="absolute top-3 right-3">
               <Badge variant={getScoreVariant(overallScore)}>

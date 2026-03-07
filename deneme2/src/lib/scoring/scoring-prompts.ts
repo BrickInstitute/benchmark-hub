@@ -9,19 +9,17 @@ Analyze this UI screenshot and provide scores on the following criteria, each on
 5. Whitespace Usage: Is whitespace used effectively to create breathing room?
 6. Accessibility Indicators: Are there visible accessibility considerations? (contrast, size, labels)
 
-IMPORTANT: Respond ONLY with valid JSON in the following format, no other text:
-{
-  "visualConsistency": <number 1-10>,
-  "layoutQuality": <number 1-10>,
-  "typography": <number 1-10>,
-  "colorHarmony": <number 1-10>,
-  "whitespaceUsage": <number 1-10>,
-  "accessibilityScore": <number 1-10>,
-  "overallScore": <number 1-10>,
-  "feedback": "<2-3 paragraph detailed analysis in Turkish>",
-  "strengths": ["<strength 1>", "<strength 2>", "<strength 3>"],
-  "improvements": ["<suggestion 1>", "<suggestion 2>", "<suggestion 3>"]
-}`;
+CRITICAL: You MUST respond with ONLY a single valid JSON object. No markdown, no code blocks, no explanation before or after. Just raw JSON.
+
+Use this exact structure:
+{"visualConsistency":7,"layoutQuality":8,"typography":6,"colorHarmony":7,"whitespaceUsage":8,"accessibilityScore":5,"overallScore":7,"feedback":"Turkish feedback here. Use simple quotes and avoid special characters.","strengths":["strength 1","strength 2","strength 3"],"improvements":["suggestion 1","suggestion 2","suggestion 3"]}
+
+Rules for the JSON:
+- All number values must be integers between 1 and 10
+- feedback: 2-3 paragraph analysis in Turkish. Do NOT use curly quotes or backticks inside strings.
+- strengths: exactly 3 items in Turkish
+- improvements: exactly 3 items in Turkish
+- Escape any double quotes inside string values with backslash`;
 
 export const SCORING_PROMPT_V2 = `You are an expert UI/UX designer and front-end developer. You are given BOTH a screenshot AND the HTML source code of a web page.
 
@@ -47,18 +45,16 @@ Score on the following criteria, each on a scale of 1-10:
 5. Whitespace Usage: Effective use of whitespace visually AND proper spacing system in code? (both)
 6. Accessibility Score: Visual accessibility (contrast, sizes) AND HTML accessibility (semantic tags, ARIA, alt texts)? (both - weight HTML analysis heavily here)
 
-IMPORTANT: Respond ONLY with valid JSON in the following format, no other text:
-{
-  "visualConsistency": <number 1-10>,
-  "layoutQuality": <number 1-10>,
-  "typography": <number 1-10>,
-  "colorHarmony": <number 1-10>,
-  "whitespaceUsage": <number 1-10>,
-  "accessibilityScore": <number 1-10>,
-  "overallScore": <number 1-10>,
-  "feedback": "<2-3 paragraph detailed analysis in Turkish covering both visual and code aspects>",
-  "strengths": ["<strength 1>", "<strength 2>", "<strength 3>"],
-  "improvements": ["<suggestion 1>", "<suggestion 2>", "<suggestion 3>"]
-}`;
+CRITICAL: You MUST respond with ONLY a single valid JSON object. No markdown, no code blocks, no explanation before or after. Just raw JSON.
+
+Use this exact structure:
+{"visualConsistency":7,"layoutQuality":8,"typography":6,"colorHarmony":7,"whitespaceUsage":8,"accessibilityScore":5,"overallScore":7,"feedback":"Turkish feedback here covering both visual and code aspects. Use simple quotes and avoid special characters.","strengths":["strength 1","strength 2","strength 3"],"improvements":["suggestion 1","suggestion 2","suggestion 3"]}
+
+Rules for the JSON:
+- All number values must be integers between 1 and 10
+- feedback: 2-3 paragraph analysis in Turkish covering both visual design and code quality. Do NOT use curly quotes or backticks inside strings.
+- strengths: exactly 3 items in Turkish
+- improvements: exactly 3 items in Turkish
+- Escape any double quotes inside string values with backslash`;
 
 export const CURRENT_PROMPT_VERSION = "v2";

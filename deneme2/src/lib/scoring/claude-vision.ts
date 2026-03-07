@@ -31,9 +31,9 @@ export async function scoreWithClaude(
 
   // If HTML is available, add it as context before the prompt
   if (htmlContent) {
-    // Truncate HTML to ~30k chars to stay within token limits
-    const truncatedHtml = htmlContent.length > 30000
-      ? htmlContent.slice(0, 30000) + "\n<!-- ... truncated ... -->"
+    // Truncate HTML to ~10k chars to reduce token costs with Haiku
+    const truncatedHtml = htmlContent.length > 10000
+      ? htmlContent.slice(0, 10000) + "\n<!-- ... truncated ... -->"
       : htmlContent;
 
     content.push({
@@ -48,7 +48,7 @@ export async function scoreWithClaude(
   });
 
   const response = await client.messages.create({
-    model: model || process.env.AI_MODEL || "claude-sonnet-4-20250514",
+    model: model || process.env.AI_MODEL || "claude-haiku-4-5-20251001",
     max_tokens: 2048,
     messages: [
       {

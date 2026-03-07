@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
 
-const uploadDir = process.env.UPLOAD_DIR || "./public/uploads";
+// Use /app/data on Railway (persistent volume), ./public/uploads locally
+const uploadDir = process.env.UPLOAD_DIR || (process.env.RAILWAY_ENVIRONMENT ? "/app/data/uploads" : "./public/uploads");
 
 export async function GET(
   _request: NextRequest,

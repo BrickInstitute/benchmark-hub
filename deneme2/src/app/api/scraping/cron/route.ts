@@ -3,71 +3,53 @@ import { prisma } from "@/lib/db";
 import { runScrapingJob } from "@/lib/jobs/job-runner";
 
 /**
- * Cron endpoint - triggers scraping for all enabled sources that are due.
+ * Cron endpoint - processes scraping jobs.
  *
- * Call this endpoint:
- * - Via Railway cron job (recommended)
- * - Via external cron service (e.g., cron-job.org)
- * - Manually for "one-click bulk scrape"
+ * Modes:
+ * - ?all=true         -> Create PENDING jobs for ALL enabled sources, then process them
+ * - ?sourceId=xxx     -> Create + run a specific source
+ * - ?process=true     -> Just process existing PENDING jobs (no new creation)
+ * - (default)         -> Create jobs for due sources + process pending
  *
- * Query params:
- * - ?schedule=daily  -> only run daily sources
- * - ?schedule=weekly -> only run weekly sources
- * - ?all=true        -> run ALL enabled sources (one-click bulk)
- * - ?sourceId=xxx    -> run a specific source
- *
- * Auth: requires API_KEY header for security
+ * Jobs are processed synchronously in this request (max 5 per call).
  */
 export async function POST(request: NextRequest) {
-  // Simple API key auth for cron
-  const apiKey = request.headers.get("x-api-key") || request.nextUrl.searchParams.get("key");
-  if (apiKey !== process.env.API_KEY) {
-    return NextResponse.json({ error: "Unauthorized", success: false }, { status: 401 });
-  }
-
   const { searchParams } = new URL(request.url);
-  const schedule = searchParams.get("schedule");
   const all = searchParams.get("all") === "true";
   const sourceId = searchParams.get("sourceId");
+  const processOnly = searchParams.get("process") === "true";
 
-  // Build query
-  const where: Record<string, unknown> = { enabled: true };
+  // Step 1: Create new PENDING jobs (unless processOnly)
+  let created = 0;
+  if (!processOnly) {
+    const where: Record<string, unknown> = { enabled: true };
+    if (sourceId) {
+      where.id = sourceId;
+    }
 
-  if (sourceId) {
-    where.id = sourceId;
-  } else if (!all && schedule) {
-    where.schedule = schedule;
-  }
-
-  // Check timing - don't re-run sources that ran recently
-  if (!all && !sourceId) {
-    const cutoff = schedule === "weekly"
-      ? new Date(Date.now() - 6 * 24 * 60 * 60 * 1000) // 6 days ago
-      : new Date(Date.now() - 22 * 60 * 60 * 1000);     // 22 hours ago
-
-    where.OR = [
-      { lastRunAt: null },
-      { lastRunAt: { lt: cutoff } },
-    ];
-  }
-
-  const sources = await prisma.scrapingSource.findMany({
-    where: where as never,
-  });
-
-  if (sources.length === 0) {
-    return NextResponse.json({
-      data: { message: "No sources due for scraping", triggered: 0 },
-      success: true,
+    const sources = await prisma.scrapingSource.findMany({
+      where: where as never,
     });
-  }
 
-  const jobs: { sourceId: string; sourceName: string; jobId: string }[] = [];
+    for (const source of sources) {
+      // Skip if there's already a pending/running job
+      const existing = await prisma.scrapingJob.findFirst({
+        where: {
+          targetUrl: source.url,
+          status: { in: ["PENDING", "RUNNING"] },
+        },
+      });
+      if (existing) continue;
 
-  for (const source of sources) {
-    try {
-      // Create a scraping job for each source
-      const job = await prisma.scrapingJob.create({
+      // Skip if ran recently (unless all=true or sourceId)
+      if (!all && !sourceId) {
+        const cooldown = source.schedule === "weekly"
+          ? 5 * 24 * 60 * 60 * 1000
+          : 12 * 60 * 60 * 1000;
+        if (source.lastRunAt && Date.now() - source.lastRunAt.getTime() < cooldown) continue;
+      }
+
+      await prisma.scrapingJob.create({
         data: {
           targetUrl: source.url,
           targetSite: source.site,
@@ -75,45 +57,87 @@ export async function POST(request: NextRequest) {
           config: source.categorySlug ? { category: source.categorySlug } : undefined,
         },
       });
-
-      // Fire and forget
-      runScrapingJob({
-        jobId: job.id,
-        targetUrl: source.url,
-        targetSite: source.site,
-        maxItems: source.maxItems,
-        config: source.categorySlug ? { category: source.categorySlug } : undefined,
-      })
-        .then(async () => {
-          await prisma.scrapingSource.update({
-            where: { id: source.id },
-            data: { lastRunAt: new Date(), lastRunStatus: "success" },
-          });
-        })
-        .catch(async () => {
-          await prisma.scrapingSource.update({
-            where: { id: source.id },
-            data: { lastRunAt: new Date(), lastRunStatus: "failed" },
-          });
-        });
-
-      jobs.push({ sourceId: source.id, sourceName: source.name, jobId: job.id });
-    } catch (error) {
-      console.error(`Failed to start job for source ${source.name}:`, error);
+      created++;
     }
   }
 
+  // Step 2: Process PENDING jobs (max 5 per request to avoid timeout)
+  const maxProcess = sourceId ? 1 : 5;
+  const pendingJobs = await prisma.scrapingJob.findMany({
+    where: { status: "PENDING" },
+    orderBy: { createdAt: "asc" },
+    take: maxProcess,
+  });
+
+  const results: Array<{ url: string; status: string; items: number }> = [];
+
+  for (const job of pendingJobs) {
+    try {
+      console.log(`[Cron] Processing: ${job.targetSite} - ${job.targetUrl.slice(0, 60)}`);
+
+      await runScrapingJob({
+        jobId: job.id,
+        targetUrl: job.targetUrl,
+        targetSite: job.targetSite,
+        maxItems: job.maxItems,
+        config: (job.config as Record<string, string>) || undefined,
+      });
+
+      // Update source lastRunAt
+      const source = await prisma.scrapingSource.findFirst({
+        where: { url: job.targetUrl },
+      });
+      if (source) {
+        await prisma.scrapingSource.update({
+          where: { id: source.id },
+          data: { lastRunAt: new Date(), lastRunStatus: "success" },
+        });
+      }
+
+      const updatedJob = await prisma.scrapingJob.findUnique({ where: { id: job.id } });
+      results.push({
+        url: job.targetUrl,
+        status: "success",
+        items: updatedJob?.processedItems || 0,
+      });
+
+      console.log(`[Cron] Done: ${job.targetSite} - ${updatedJob?.processedItems || 0} items`);
+    } catch (err) {
+      console.error(`[Cron] Failed: ${job.targetUrl}`, err);
+
+      const source = await prisma.scrapingSource.findFirst({ where: { url: job.targetUrl } });
+      if (source) {
+        await prisma.scrapingSource.update({
+          where: { id: source.id },
+          data: { lastRunAt: new Date(), lastRunStatus: "failed" },
+        }).catch(() => {});
+      }
+
+      results.push({
+        url: job.targetUrl,
+        status: "failed",
+        items: 0,
+      });
+    }
+  }
+
+  // Count remaining
+  const remaining = await prisma.scrapingJob.count({ where: { status: "PENDING" } });
+
   return NextResponse.json({
     data: {
-      message: `Triggered ${jobs.length} scraping job(s)`,
-      triggered: jobs.length,
-      jobs,
+      created,
+      processed: results.length,
+      remaining,
+      results,
+      message: remaining > 0
+        ? `Processed ${results.length} jobs. ${remaining} still pending - call again to continue.`
+        : `All done. Processed ${results.length} jobs.`,
     },
     success: true,
   });
 }
 
-// Also support GET for easier cron setup
 export async function GET(request: NextRequest) {
   return POST(request);
 }

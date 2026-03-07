@@ -59,12 +59,16 @@ export function SourceManager() {
   const handleBulkScrape = async () => {
     setIsBulkRunning(true);
     try {
-      const apiKey = prompt("API Key giriniz:");
-      if (!apiKey) return;
-      await fetch(`/api/scraping/cron?all=true&key=${apiKey}`, {
+      const res = await fetch("/api/scraping/cron?all=true", {
         method: "POST",
       });
-      alert("Toplu scraping baslatildi! Job listesini kontrol edin.");
+      const result = await res.json();
+      if (result.success) {
+        alert(`${result.data?.triggered || 0} scraping job baslatildi!`);
+      } else {
+        alert(result.error || "Hata olustu");
+      }
+      mutate();
     } finally {
       setIsBulkRunning(false);
     }
