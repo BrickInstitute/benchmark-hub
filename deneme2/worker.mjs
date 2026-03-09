@@ -11,9 +11,9 @@ const SCRAPE_INTERVAL = 3 * 60 * 1000;
 const SCORE_INTERVAL = 3 * 60 * 1000;
 const CREATE_JOBS_INTERVAL = 30 * 60 * 1000;
 const DISCOVERY_INTERVAL = 2 * 60 * 60 * 1000;
-const SCRAPE_COOLDOWN = 6 * 60 * 60 * 1000;
+const SCRAPE_COOLDOWN = 3 * 60 * 60 * 1000;
 const WEEKLY_COOLDOWN = 5 * 24 * 60 * 60 * 1000;
-const SCORING_BATCH = 10;
+const SCORING_BATCH = 20;
 
 let scrapingBusy = false;
 let scoringBusy = false;
@@ -131,26 +131,48 @@ async function scoreUnscored() {
   scoringBusy = true;
 
   try {
+    const fs = await import("fs/promises");
+    const path = await import("path");
+    const uploadDir = process.env.UPLOAD_DIR || (process.env.RAILWAY_ENVIRONMENT ? "/app/data/uploads" : "./public/uploads");
+
     const unscored = await prisma.benchmark.findMany({
       where: { overallScore: null, scores: { none: {} } },
       select: { id: true, title: true, imagePath: true, format: true, htmlContent: true },
-      orderBy: { createdAt: "asc" },
+      orderBy: { createdAt: "desc" },
       take: SCORING_BATCH,
     });
 
     if (unscored.length === 0) return;
-    console.log(`[Worker] Scoring ${unscored.length} benchmarks...`);
+
+    // Filter out benchmarks with missing image files
+    const withImages = [];
+    let skippedMissing = 0;
+    for (const item of unscored) {
+      const imgPath = path.join(uploadDir, item.imagePath);
+      try {
+        await fs.access(imgPath);
+        withImages.push(item);
+      } catch {
+        skippedMissing++;
+        // Mark as scored with -1 so we don't keep retrying missing images
+        await prisma.benchmark.update({
+          where: { id: item.id },
+          data: { overallScore: -1 },
+        });
+      }
+    }
+
+    if (skippedMissing > 0) console.log(`[Worker] Skipped ${skippedMissing} benchmarks (missing images)`);
+    if (withImages.length === 0) return;
+
+    console.log(`[Worker] Scoring ${withImages.length} benchmarks...`);
 
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     let scored = 0;
     let failed = 0;
 
-    for (const item of unscored) {
+    for (const item of withImages) {
       try {
-        // Read image file
-        const fs = await import("fs/promises");
-        const path = await import("path");
-        const uploadDir = process.env.UPLOAD_DIR || (process.env.RAILWAY_ENVIRONMENT ? "/app/data/uploads" : "./public/uploads");
         const imgPath = path.join(uploadDir, item.imagePath);
         const imgBuffer = await fs.readFile(imgPath);
         const imgBase64 = imgBuffer.toString("base64");
@@ -220,10 +242,7 @@ async function scoreUnscored() {
           console.log("[Worker] Rate limited, pausing scoring");
           break;
         }
-        // Skip file-not-found errors silently
-        if (!msg.includes("ENOENT")) {
-          console.error(`[Worker] Score error: ${msg.slice(0, 80)}`);
-        }
+        console.error(`[Worker] Score error: ${msg.slice(0, 80)}`);
       }
     }
 
