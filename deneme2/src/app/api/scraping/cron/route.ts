@@ -61,8 +61,8 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Step 2: Process PENDING jobs (max 5 per request to avoid timeout)
-  const maxProcess = sourceId ? 1 : 5;
+  // Step 2: Process PENDING jobs (max 10 per request)
+  const maxProcess = sourceId ? 1 : 10;
   const pendingJobs = await prisma.scrapingJob.findMany({
     where: { status: "PENDING" },
     orderBy: { createdAt: "asc" },

@@ -72,14 +72,22 @@ COPY --from=deps /app/node_modules/prisma ./node_modules/prisma
 COPY --from=deps /app/node_modules/playwright ./node_modules/playwright
 COPY --from=deps /app/node_modules/playwright-core ./node_modules/playwright-core
 
+# Copy Anthropic SDK (needed by worker.mjs for direct scoring)
+COPY --from=deps /app/node_modules/@anthropic-ai ./node_modules/@anthropic-ai
+
 # Create upload directory and cache directory
 RUN mkdir -p /app/data/uploads && chown -R nextjs:nodejs /app/data
 RUN mkdir -p /app/.next/cache && chown -R nextjs:nodejs /app/.next/cache
+
+# Copy worker and start script
+COPY worker.mjs ./worker.mjs
+COPY start.sh ./start.sh
+RUN chmod +x /app/start.sh
 
 ENV HOME=/home/nextjs
 
 EXPOSE ${PORT:-3000}
 ENV HOSTNAME="0.0.0.0"
 
-# Entrypoint script: fix volume permissions then run as nextjs
-CMD ["sh", "-c", "mkdir -p /app/data/uploads/benchmarks && chown -R 1001:1001 /app/data && exec su -s /bin/sh -c 'export HOME=/home/nextjs && node node_modules/prisma/build/index.js db push --skip-generate && node prisma/seed.mjs && node server.js' nextjs"]
+# Start both Next.js server and worker process
+CMD ["/app/start.sh"]
