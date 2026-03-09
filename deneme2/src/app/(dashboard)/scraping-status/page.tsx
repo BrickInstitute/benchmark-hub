@@ -163,27 +163,31 @@ export default function ScrapingStatusPage() {
           <h2 className="font-semibold text-gray-900">Son 7 Gun</h2>
         </CardHeader>
         <CardContent>
-          <div className="flex items-end gap-2 h-40">
+          <div className="flex items-end gap-3" style={{ height: 180 }}>
             {dailyStats.map((day, i) => {
-              const height = maxDaily > 0 ? (day.count / maxDaily) * 100 : 0;
+              const ratio = maxDaily > 0 ? day.count / maxDaily : 0;
+              const barHeight = Math.max(Math.round(ratio * 140), 4);
               const isToday = i === dailyStats.length - 1;
               const dayOfWeek = dayNames[new Date(day.date).getDay()];
               return (
-                <div key={day.date} className="flex-1 flex flex-col items-center gap-1">
-                  <span className="text-xs font-medium text-gray-700">
+                <div
+                  key={day.date}
+                  className="flex-1 flex flex-col items-center justify-end"
+                  style={{ height: 180 }}
+                >
+                  <span className="text-xs font-medium text-gray-700 mb-1">
                     {day.count > 0 ? day.count : ""}
                   </span>
                   <div
                     className={cn(
-                      "w-full rounded-t transition-all",
-                      isToday ? "bg-brand-600" : "bg-brand-200",
-                      height === 0 && "min-h-[2px]"
+                      "w-full rounded-t-md transition-all",
+                      isToday ? "bg-brand-600" : "bg-brand-200"
                     )}
-                    style={{ height: `${Math.max(height, 2)}%` }}
+                    style={{ height: barHeight, minWidth: 24 }}
                   />
                   <span
                     className={cn(
-                      "text-xs",
+                      "text-xs mt-2",
                       isToday ? "font-semibold text-brand-700" : "text-gray-500"
                     )}
                   >
