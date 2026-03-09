@@ -9,6 +9,7 @@ const navigation = [
   { name: "Karsilastir", href: "/compare", icon: "columns" },
   { name: "Skorlama", href: "/scoring", icon: "star" },
   { name: "Scraping", href: "/scraping", icon: "download" },
+  { name: "Durum", href: "/scraping-status", icon: "activity" },
   { name: "Kesif", href: "/discovery", icon: "compass" },
   { name: "Yukle", href: "/upload", icon: "upload" },
   { name: "Ayarlar", href: "/settings", icon: "settings" },
@@ -33,6 +34,11 @@ const iconMap: Record<string, React.ReactNode> = {
   download: (
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+    </svg>
+  ),
+  activity: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M22 12h-4l-3 9L9 3l-3 9H2" />
     </svg>
   ),
   compass: (
