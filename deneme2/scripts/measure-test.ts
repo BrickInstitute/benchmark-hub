@@ -52,6 +52,13 @@ async function main() {
   const ctas = s.interactive.filter((e) => e.primaryCta).map((e) => e.text);
   console.log(`primary CTAs: ${JSON.stringify([...new Set(ctas)].slice(0, 6))}`);
 
+  console.log(`\nregions: ${s.regions.length}`);
+  for (const r of s.regions) {
+    console.log(
+      `  ${r.type.padEnd(11)} [${String(r.box.x).padStart(5)},${String(r.box.y).padStart(6)} ${String(r.box.w).padStart(5)}x${String(r.box.h).padStart(5)}]  ${r.name.padEnd(22)} ${r.basis}`,
+    );
+  }
+
   console.log("\nobservations:");
   const observations = evaluateDeterministic(s, q.passed);
   for (const o of observations) {

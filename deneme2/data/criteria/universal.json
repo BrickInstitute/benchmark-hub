@@ -1,0 +1,148 @@
+{
+  "layer": "UNIVERSAL",
+  "version": "1",
+  "note": "Criteria measured the same way in every sector. Parametric ones (U06/U14/U15) take their target object from the sector package. Steps are the ordered rungs of the pattern; the UI draws them as a ladder.",
+  "criteria": [
+    {
+      "code": "U01",
+      "pattern": "P6",
+      "question": "Ana menüde kaç birinci seviye öğe var?",
+      "rule": "Yalnızca görünür birinci seviye öğeler sayılır. Katlanmış 'diğer/menü' altındaki öğeler açılmadan sayılmaz. Dil değiştirici, arama simgesi ve metinsiz simge bağlantıları sayılmaz. Aynı metnin iki kez geçmesi tek öğedir.",
+      "naRule": "Sayfada ana menü yok. Mobil görünümde menü hamburger altında katlanmışsa ölçüm etkileşim gerektirir ve v1 kapsamı dışındadır. Katlanmış menü hiçbir koşulda absent sayılmaz.",
+      "steps": ["az", "orta", "cok"],
+      "bucketLimits": { "az": [0, 4], "orta": [5, 8], "cok": [9, null] },
+      "defaultRegion": "MENU"
+    },
+    {
+      "code": "U02",
+      "pattern": "P1",
+      "question": "Site içi arama var mı?",
+      "rule": "Sayfada çalışan bir arama girişi veya aramayı açan simge bulunmalı. Footer'daki site haritası bağlantısı arama sayılmaz.",
+      "steps": ["var", "yok"],
+      "defaultRegion": "MENU"
+    },
+    {
+      "code": "U03",
+      "pattern": "P6",
+      "question": "İlk ekranda kaç birincil eylem çağrısı (CTA) var?",
+      "rule": "Birincil CTA = buton görünümlü ve eylem fiili içeren öğe. Menü bağlantıları, çerez penceresi butonları ve dil değiştirici sayılmaz.",
+      "steps": ["az", "orta", "cok"],
+      "bucketLimits": { "az": [1, 1], "orta": [2, 3], "cok": [4, null] },
+      "defaultRegion": "HERO"
+    },
+    {
+      "code": "U04",
+      "pattern": "P2",
+      "question": "Birincil CTA nerede konumlanmış?",
+      "rule": "Sayfanın ana eylemini temsil eden ilk buton esas alınır. Konum, DOM kutusunun y değeri ile görünüm yüksekliği karşılaştırılarak yazılım tarafından hesaplanır.",
+      "naRule": "Birincil CTA tanımlanamıyor.",
+      "steps": ["ilk_ekran", "ilk_kaydirma", "sayfa_alti", "yok"],
+      "defaultRegion": "HERO"
+    },
+    {
+      "code": "U05",
+      "pattern": "P3",
+      "question": "Değer önerisi ne kadar somut?",
+      "rule": "Hero alanındaki ana başlık değerlendirilir. rakam = sayısal fayda ('48 saatte sonuç'); aralik = sayısal fayda aralıkla; kosullu = fayda somut ama şarta bağlı; yonlendirme = jenerik slogan, ölçülebilir bir şey söylemiyor; yok = metin yok, yalnızca görsel.",
+      "steps": ["rakam", "aralik", "kosullu", "yonlendirme", "yok"],
+      "defaultRegion": "HERO"
+    },
+    {
+      "code": "U06",
+      "pattern": "P5",
+      "question": "Dönüşüm hedefine kaç tıklama uzaklıkta?",
+      "rule": "Hedef, sektör paketindeki dönüşüm tanımından gelir. Bağlantı grafiği üzerinden yazılım yürütür; model yalnızca hedef bağlantıyı işaretler. 'ulasilamadi' sonucu unknown'a eşlenir, absent'a değil.",
+      "steps": ["0", "1", "2", "3_arti", "ulasilamadi"],
+      "parametric": true,
+      "defaultRegion": "CONTENT"
+    },
+    {
+      "code": "U07",
+      "pattern": "P2",
+      "question": "İletişim bilgisi (telefon veya adres) nerede?",
+      "rule": "Telefon numarası, tel: bağlantısı veya fiziksel adres. Footer'da yer alması sayfa_alti sayılır.",
+      "steps": ["ilk_ekran", "ilk_kaydirma", "sayfa_alti", "yok"],
+      "defaultRegion": "FOOTER"
+    },
+    {
+      "code": "U08",
+      "pattern": "P4",
+      "question": "Canlı destek hangi düzeyde sunuluyor?",
+      "rule": "gomulu = sayfada açılan sohbet penceresi; ayri_sayfa = iletişim formuna giden bağlantı; statik = yalnızca telefon/e-posta yazılı; yok = hiçbiri.",
+      "steps": ["gomulu", "ayri_sayfa", "statik", "yok"],
+      "defaultRegion": "CONTENT"
+    },
+    {
+      "code": "U09",
+      "pattern": "P7",
+      "question": "Hangi güven sinyali türleri kullanılmış?",
+      "rule": "Sayfada görünen sinyaller çoklu işaretlenir. Footer'daki sertifika/logo alanları dahildir. Boş liste absent sayılır.",
+      "steps": ["musteri_yorumu", "sayisal_iddia", "sertifika_akreditasyon", "basin_odul", "kurumsal_referans"],
+      "defaultRegion": "TRUST"
+    },
+    {
+      "code": "U10",
+      "pattern": "P1",
+      "question": "Yasal veya gizlilik bilgisine erişim var mı?",
+      "rule": "KVKK aydınlatma metni, gizlilik politikası veya kullanım şartlarına giden bir bağlantı yeterlidir.",
+      "steps": ["var", "yok"],
+      "defaultRegion": "FOOTER"
+    },
+    {
+      "code": "U11",
+      "pattern": "P6",
+      "question": "Dönüşüm formunda kaç zorunlu alan var?",
+      "rule": "Yalnızca bu sayfadaki form sayılır. Zorunluluk işareti veya required niteliği esas alınır. Onay kutuları alan sayılır.",
+      "naRule": "Bu sayfada form yok.",
+      "steps": ["az", "orta", "cok"],
+      "bucketLimits": { "az": [0, 3], "orta": [4, 7], "cok": [8, null] },
+      "defaultRegion": "FORM"
+    },
+    {
+      "code": "U12",
+      "pattern": "P6",
+      "question": "Çerez/izin penceresi ilk ekranın yüzde kaçını kaplıyor?",
+      "rule": "Pencere kutusunun alanı / görünüm alanı, yüzde olarak. Ham sayı yüzde değeridir.",
+      "naRule": "Çerez penceresi çıkmadı.",
+      "steps": ["az", "orta", "cok"],
+      "bucketLimits": { "az": [0, 15], "orta": [16, 40], "cok": [41, null] },
+      "defaultRegion": "COOKIE"
+    },
+    {
+      "code": "U13",
+      "pattern": "P1",
+      "question": "Dil seçeneği var mı?",
+      "rule": "Sayfada görünür bir dil değiştirici bulunmalı.",
+      "steps": ["var", "yok"],
+      "defaultRegion": "MENU"
+    },
+    {
+      "code": "U14",
+      "pattern": "P3",
+      "question": "Fiyat/maliyet bilgisi ne kadar somut?",
+      "rule": "Hedef nesne sektör paketindeki bağlamadan gelir. rakam = tek ve kesin sayı; aralik = alt-üst sınır; kosullu = sayı var ama bağlayıcı değil ('...dan başlayan'); yonlendirme = sayı yok, öğrenmek için eylem isteniyor; yok = bilgi hiç yer almıyor.",
+      "naRule": "Sektörde hizmet ücretsiz.",
+      "steps": ["rakam", "aralik", "kosullu", "yonlendirme", "yok"],
+      "parametric": true,
+      "defaultRegion": "CONTENT"
+    },
+    {
+      "code": "U15",
+      "pattern": "P4",
+      "question": "Hesaplama/sorgulama aracı hangi düzeyde?",
+      "rule": "Hedef araç sektör paketindeki bağlamadan gelir. gomulu = araç bu sayfada çalışıyor; ayri_sayfa = araca giden bağlantı var; statik = araç yok ama aynı bilgi tablo/metin olarak verilmiş; yok = hiçbiri.",
+      "naRule": "Sektörde araç tanımlı değil.",
+      "steps": ["gomulu", "ayri_sayfa", "statik", "yok"],
+      "parametric": true,
+      "defaultRegion": "CALCULATOR"
+    },
+    {
+      "code": "U16",
+      "pattern": "P2",
+      "question": "Sayfanın asıl içeriği nerede başlıyor?",
+      "rule": "Slider/banner değil, sayfanın konusunu oluşturan içerik bloğu esas alınır.",
+      "steps": ["ilk_ekran", "ilk_kaydirma", "sayfa_alti", "yok"],
+      "defaultRegion": "CONTENT"
+    }
+  ]
+}

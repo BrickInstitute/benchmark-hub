@@ -29,6 +29,9 @@ export class LocalStorage implements StorageProvider {
   }
 
   getUrl(key: string): string {
-    return `/api/files/${encodeURIComponent(key)}`;
+    // Each path segment is encoded separately. Encoding the whole key turns
+    // "captures/abc/full.png" into one segment containing %2F, which the
+    // [...path] route cannot resolve back to a file.
+    return `/api/files/${key.split("/").map(encodeURIComponent).join("/")}`;
   }
 }

@@ -1,0 +1,137 @@
+{
+  "layer": "SECTOR",
+  "sectorSlug": "bankacilik",
+  "sectorName": "Bankacılık (bireysel)",
+  "country": "TR",
+  "version": "1",
+  "pageRole": "DECISION",
+  "pageName": "İhtiyaç kredisi ürün sayfası",
+  "conversionTarget": "Kredi başvuru formunun ilk adımı",
+
+  "note": "supersedes: when a sector criterion measures the same target object as a universal one, only the sector code produces an observation. Otherwise the same fact is counted twice and the distribution breaks.",
+
+  "bindings": {
+    "U14": "Yıllık veya aylık faiz oranı",
+    "U15": "Taksit / geri ödeme hesaplayıcı",
+    "U06": "Kredi başvuru formu"
+  },
+
+  "criteria": [
+    {
+      "code": "B01",
+      "pattern": "P3",
+      "supersedesCode": "U14",
+      "question": "Faiz oranı ne kadar somut gösteriliyor?",
+      "rule": "Aylık veya yıllık faiz oranı. rakam = tek ve kesin oran; aralik = alt-üst sınır; kosullu = sayı var ama bağlayıcı değil ('...dan başlayan', 'size özel'); yonlendirme = sayı yok, hesaplama/başvuru isteniyor; yok = oran hiç geçmiyor. Aylık/yıllık ayrımı basamağı etkilemez.",
+      "steps": ["rakam", "aralik", "kosullu", "yonlendirme", "yok"],
+      "defaultRegion": "CONTENT"
+    },
+    {
+      "code": "B02",
+      "pattern": "P2",
+      "question": "Faiz oranı sayfanın neresinde?",
+      "rule": "Oranın ilk göründüğü kutu esas alınır. Konum yazılım tarafından hesaplanır.",
+      "naRule": "B01 = yok.",
+      "steps": ["ilk_ekran", "ilk_kaydirma", "sayfa_alti", "yok"],
+      "defaultRegion": "CONTENT"
+    },
+    {
+      "code": "B03",
+      "pattern": "P4",
+      "question": "Taksit hesaplayıcı hangi düzeyde?",
+      "rule": "gomulu = sayfada tutar/vade girilip taksit görülebiliyor; ayri_sayfa = 'Hesapla' bağlantısı başka sayfaya gidiyor; statik = araç yok ama vade-taksit tablosu var; yok = ikisi de yok.",
+      "steps": ["gomulu", "ayri_sayfa", "statik", "yok"],
+      "defaultRegion": "CALCULATOR"
+    },
+    {
+      "code": "B04",
+      "pattern": "P3",
+      "question": "Toplam maliyet bilgisi ne kadar somut?",
+      "rule": "Yıllık maliyet oranı veya toplam geri ödeme tutarı. Basamaklar B01 ile aynı mantıkta.",
+      "steps": ["rakam", "aralik", "kosullu", "yonlendirme", "yok"],
+      "defaultRegion": "CONTENT"
+    },
+    {
+      "code": "B05",
+      "pattern": "P1",
+      "question": "Masraf ve komisyon bilgisi belirtilmiş mi?",
+      "rule": "Tahsis ücreti, dosya masrafı, sigorta gibi en az bir maliyet kaleminin sayfada adının geçmesi yeterli. Tutarı verilmiş olması şart değil.",
+      "steps": ["var", "yok"],
+      "defaultRegion": "CONTENT"
+    },
+    {
+      "code": "B06",
+      "pattern": "P3",
+      "question": "Azami tutar ve vade bilgisi ne kadar somut?",
+      "rule": "rakam = tek tutar ve vade verilmiş; aralik = alt-üst sınır; kosullu = 'size özel limit'; yonlendirme = hesaplamaya yönlendiriyor; yok.",
+      "steps": ["rakam", "aralik", "kosullu", "yonlendirme", "yok"],
+      "defaultRegion": "CONTENT"
+    },
+    {
+      "code": "B07",
+      "pattern": "P1",
+      "question": "Gerekli belgeler listelenmiş mi?",
+      "rule": "Başvuru için istenen belge veya koşulların sayfada madde madde verilmesi. Tek cümlelik genel ifade yeterli değildir.",
+      "steps": ["var", "yok"],
+      "defaultRegion": "CONTENT"
+    },
+    {
+      "code": "B08",
+      "pattern": "P3",
+      "question": "Sonuçlanma süresi vaadi ne kadar somut?",
+      "rule": "rakam = '3 dakikada sonuç'; aralik = '1-2 iş günü'; kosullu = 'çoğu başvuruda hızlı'; yonlendirme = süre yerine başvuruya çağırıyor; yok.",
+      "steps": ["rakam", "aralik", "kosullu", "yonlendirme", "yok"],
+      "defaultRegion": "CONTENT"
+    },
+    {
+      "code": "B09",
+      "pattern": "P5",
+      "supersedesCode": "U06",
+      "question": "Kredi başvurusuna kaç tıklama uzaklıkta?",
+      "rule": "Hedef, başvuru formunun ilk adımı. Mobil uygulamaya yönlendirme 'ulasilamadi' sayılır (web kapsamı dışında).",
+      "steps": ["0", "1", "2", "3_arti", "ulasilamadi"],
+      "defaultRegion": "CONTENT"
+    },
+    {
+      "code": "B10",
+      "pattern": "P1",
+      "question": "Müşteri olmayanların başvurabilirliği belirtilmiş mi?",
+      "rule": "Mevcut müşteri şartı olup olmadığının sayfada açıkça yazılması. Belirsizse yok.",
+      "steps": ["var", "yok"],
+      "defaultRegion": "CONTENT"
+    },
+    {
+      "code": "B11",
+      "pattern": "P1",
+      "question": "Erken kapama veya yapılandırma bilgisi var mı?",
+      "rule": "Erken ödeme, kapama ücreti veya yapılandırma imkânına dair bilgi.",
+      "steps": ["var", "yok"],
+      "defaultRegion": "CONTENT"
+    },
+    {
+      "code": "B12",
+      "pattern": "P7",
+      "supersedesCode": "U09",
+      "question": "Hangi güven sinyalleri kullanılmış?",
+      "rule": "sayisal_iddia = derecelendirme notu veya müşteri sayısı; basin_odul = ödül/derece; kurumsal_referans = mevzuat veya denetim kurumu atfı; sertifika_akreditasyon = güvenlik/denetim sertifikası; musteri_yorumu.",
+      "steps": ["musteri_yorumu", "sayisal_iddia", "sertifika_akreditasyon", "basin_odul", "kurumsal_referans"],
+      "defaultRegion": "TRUST"
+    },
+    {
+      "code": "B13",
+      "pattern": "P4",
+      "question": "Ön uygunluk sorgu aracı hangi düzeyde?",
+      "rule": "Başvuru yapmadan uygunluk/limit öğrenme imkânı. gomulu = sayfada sorgulanıyor; ayri_sayfa = ayrı sorgu sayfası; statik = koşullar yazılı ama sorgu yok; yok.",
+      "steps": ["gomulu", "ayri_sayfa", "statik", "yok"],
+      "defaultRegion": "CALCULATOR"
+    },
+    {
+      "code": "B14",
+      "pattern": "P1",
+      "question": "Temsili örnek hesaplama veya yasal uyarı var mı?",
+      "rule": "Mevzuatın istediği temsili örnek metni veya yasal uyarı notu.",
+      "steps": ["var", "yok"],
+      "defaultRegion": "CONTENT"
+    }
+  ]
+}

@@ -64,6 +64,30 @@ export interface MenuMeasurement {
   possiblyCollapsed: boolean;
 }
 
+/**
+ * A named rectangle found in the DOM. This is what the report highlights when
+ * the user hovers. The box always comes from a real element, never from a
+ * model - the selector makes it re-verifiable.
+ */
+export interface RawRegion {
+  type:
+    | "MENU"
+    | "HERO"
+    | "CONTENT"
+    | "CARD_LIST"
+    | "CALCULATOR"
+    | "FORM"
+    | "TRUST"
+    | "FOOTER"
+    | "COOKIE";
+  /** Provisional, structural name. A model may later give it a readable one. */
+  name: string;
+  box: Box;
+  selector: string;
+  /** Why this element was classified as this type - useful when debugging. */
+  basis: string;
+}
+
 export interface DomSnapshot {
   url: string;
   title: string;
@@ -79,6 +103,7 @@ export interface DomSnapshot {
   offScreenNodeCount: number;
   cookieBanner: CookieBanner;
   menu: MenuMeasurement;
+  regions: RawRegion[];
   /** Sorted on-screen text, hashed. See patterns.contentSimilarity for why. */
   contentSignature: string;
 }
@@ -528,6 +553,208 @@ export function collectDomSnapshot(): DomSnapshot {
     });
   }
 
+  // ---- Regions (segmentation) ----
+  // Everything here is DOM-anchored. A model may rename a region later, but it
+  // never draws one: a box that is not backed by an element cannot be verified
+  // and would not land correctly on the screenshot.
+  const regions: RawRegion[] = [];
+  const claimed = new Set<Element>();
+
+  /** How much of `a` is covered by `b`, 0..1. */
+  function overlapRatio(a: Box, b: Box): number {
+    const w = Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x));
+    const h = Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
+    const area = a.w * a.h;
+    return area === 0 ? 0 : (w * h) / area;
+  }
+
+  function addRegion(
+    el: Element,
+    type: RawRegion["type"],
+    name: string,
+    basis: string,
+  ): boolean {
+    if (claimed.has(el)) return false;
+    if (!isVisible(el)) return false;
+    const r = el.getBoundingClientRect();
+    if (r.width < 40 || r.height < 24) return false;
+
+    // A carousel's inner track is far wider than the page (one bank page had a
+    // 10080px element holding seven 1440px slides). That is a scroll rail, not
+    // something a user can point at, so it is not a region.
+    if (r.width > pageWidth * 1.2) return false;
+
+    const box = toBox(r);
+    if (!isOnScreen(box)) return false;
+
+    // Near-duplicate of a region we already have: keep the first one.
+    if (regions.some((existing) => overlapRatio(box, existing.box) > 0.9)) return false;
+
+    claimed.add(el);
+    regions.push({ type, name, box, selector: buildSelector(el), basis });
+    return true;
+  }
+
+  // Cookie dialog - already located above.
+  if (cookieEl) addRegion(cookieEl as Element, "COOKIE", "Çerez bildirimi", "fixed consent dialog");
+
+  // Menu.
+  if (menu.selector) {
+    const el = document.querySelector(menu.selector);
+    if (el) addRegion(el, "MENU", "Ana menü", `menu detected via ${menu.method}`);
+  }
+  if (!regions.some((r) => r.type === "MENU")) {
+    const nav = document.querySelector('nav, [role="navigation"], header');
+    if (nav) addRegion(nav, "MENU", "Ana menü", "semantic nav/header");
+  }
+
+  // Footer: semantic first, then the widest tall block in the bottom fifth.
+  const footerEl = document.querySelector('footer, [role="contentinfo"]');
+  let footerAdded = footerEl
+    ? addRegion(footerEl, "FOOTER", "Footer", "semantic footer")
+    : false;
+  if (!footerAdded) {
+    // No <footer>: take the lowest sizeable block on the page.
+    const pageBottom = Math.max(
+      document.body.scrollHeight,
+      document.documentElement.scrollHeight,
+    );
+    const candidates = Array.from(document.querySelectorAll("body > *, body > div > *"))
+      .filter((el) => {
+        if (!isVisible(el)) return false;
+        const r = el.getBoundingClientRect();
+        if (r.height < 120 || r.width < vw * 0.5) return false;
+        return toBox(r).y > pageBottom * 0.7;
+      })
+      .sort((a, b) => b.getBoundingClientRect().top - a.getBoundingClientRect().top);
+    if (candidates[0]) {
+      footerAdded = addRegion(candidates[0], "FOOTER", "Footer", "lowest large block");
+    }
+  }
+
+  // Forms.
+  document.querySelectorAll("form").forEach((f) => {
+    const r = f.getBoundingClientRect();
+    // A form wrapping the whole page (common in ASP.NET) is not a region.
+    if (r.height > 60 && r.height < document.body.scrollHeight * 0.8) {
+      addRegion(f, "FORM", "Form", "form element");
+    }
+  });
+
+  // Calculator: a container holding at least two numeric-ish inputs.
+  const NUMERIC_HINT = /tutar|vade|miktar|amount|term|month|ay|taksit|faiz|rate|adet/;
+  const numericInputs = Array.from(
+    document.querySelectorAll('input[type="number"], input[type="range"], select, input[type="text"]'),
+  ).filter((el) => {
+    if (!isVisible(el)) return false;
+    const hint = fold(
+      (el.getAttribute("name") || "") +
+        " " +
+        (el.getAttribute("id") || "") +
+        " " +
+        (el.getAttribute("placeholder") || "") +
+        " " +
+        (el.getAttribute("aria-label") || ""),
+    );
+    return (
+      el.getAttribute("type") === "number" ||
+      el.getAttribute("type") === "range" ||
+      NUMERIC_HINT.test(hint)
+    );
+  });
+  if (numericInputs.length >= 2) {
+    let ancestor: Element | null = numericInputs[0]!.parentElement;
+    let guard = 0;
+    while (ancestor && guard < 8) {
+      const inside = numericInputs.filter((i) => ancestor!.contains(i)).length;
+      if (inside >= 2) break;
+      ancestor = ancestor.parentElement;
+      guard++;
+    }
+    if (ancestor) {
+      addRegion(ancestor, "CALCULATOR", "Hesaplama aracı", `${numericInputs.length} numeric inputs`);
+    }
+  }
+
+  // Card lists: three or more sibling elements sharing a class signature.
+  const CARD_LIMIT = 6;
+  let cardLists = 0;
+  document.querySelectorAll("ul, div, section").forEach((parent) => {
+    if (cardLists >= CARD_LIMIT) return;
+    if (claimed.has(parent)) return;
+    const children = Array.from(parent.children).filter((c) => {
+      if (!isVisible(c)) return false;
+      const cr = c.getBoundingClientRect();
+      return cr.width > 80 && cr.height > 80;
+    });
+    if (children.length < 3) return;
+    const signature = (c: Element) =>
+      c.tagName + "|" + (c.getAttribute("class") || "").split(/\s+/).slice(0, 2).join(" ");
+    const signatures = new Set(children.map(signature));
+    if (signatures.size > 1) return; // not a uniform list
+    const pr = parent.getBoundingClientRect();
+    if (pr.height < 120) return;
+    addRegion(parent, "CARD_LIST", `Kart listesi (${children.length})`, `${children.length} uniform siblings`);
+    cardLists++;
+  });
+
+  // Hero: the first wide, tall block that starts inside the first screen and
+  // is not already claimed as menu or cookie.
+  const heroCandidates = Array.from(document.querySelectorAll("section, div, header > div"));
+  for (const el of heroCandidates) {
+    if (claimed.has(el)) continue;
+    if (!isVisible(el)) continue;
+    const r = el.getBoundingClientRect();
+    const box = toBox(r);
+    if (box.y > vh * 0.9) continue;
+    if (r.width < vw * 0.8) continue;
+    if (r.height < vh * 0.25 || r.height > vh * 1.6) continue;
+    if (!isOnScreen(box)) continue;
+    // Must contain some text, otherwise it is a layout wrapper.
+    if (elementText(el).length < 10) continue;
+    addRegion(el, "HERO", "Hero / ana teklif", "first wide block in viewport");
+    break;
+  }
+
+  // Trust signals: a block whose text carries certification or award wording.
+  const TRUST_HINT = /sertifika|akredit|odul|award|iso [0-9]|jci|bddk|guvenlik|security|lisans/;
+  const trustEl = Array.from(document.querySelectorAll("section, div")).find((el) => {
+    if (claimed.has(el) || !isVisible(el)) return false;
+    const r = el.getBoundingClientRect();
+    if (r.height < 60 || r.height > vh) return false;
+    const t = fold(elementText(el));
+    return t.length > 10 && t.length < 600 && TRUST_HINT.test(t);
+  });
+  if (trustEl) addRegion(trustEl, "TRUST", "Güven sinyalleri", "certification/award wording");
+
+  // Remaining large blocks become CONTENT, capped so the report stays legible.
+  // Remaining large blocks become CONTENT. Candidates are drawn widely because
+  // few sites use <main>; overlap with an existing region is what filters them.
+  const CONTENT_LIMIT = 8;
+  let contentCount = 0;
+  const contentCandidates = Array.from(
+    document.querySelectorAll("main > *, body > section, body > div > section, body > div > div, section"),
+  )
+    .filter((el) => {
+      if (claimed.has(el) || !isVisible(el)) return false;
+      const r = el.getBoundingClientRect();
+      if (r.height < 200 || r.height > vh * 3) return false;
+      if (r.width < vw * 0.5 || r.width > pageWidth * 1.2) return false;
+      return elementText(el).length >= 40;
+    })
+    .sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
+
+  for (const el of contentCandidates) {
+    if (contentCount >= CONTENT_LIMIT) break;
+    const r = el.getBoundingClientRect();
+    const box = toBox(r);
+    // Skip anything largely inside a region we already recorded.
+    if (regions.some((existing) => overlapRatio(box, existing.box) > 0.6)) continue;
+    if (addRegion(el, "CONTENT", "İçerik bölümü", "large block")) contentCount++;
+  }
+
+  regions.sort((a, b) => a.box.y - b.box.y || a.box.x - b.box.x);
+
   const visibleText = onScreenParts.join(" ");
 
   const signatureInput = onScreenParts.map((s) => s.toLowerCase()).sort().join("|");
@@ -557,6 +784,7 @@ export function collectDomSnapshot(): DomSnapshot {
     offScreenNodeCount,
     cookieBanner,
     menu,
+    regions,
     contentSignature,
   };
 }
