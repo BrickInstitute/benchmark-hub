@@ -34,6 +34,32 @@ model Benchmark {
   scores       Score[]
   overallScore Float?
 
+  // ---- Measurement layer (evidence-based analysis) ----
+  // A Benchmark is the analysed subject: one captured page in one viewport.
+  viewport       Viewport      @default(DESKTOP)
+  captureStatus  CaptureStatus @default(SUCCESS)
+  /// Quality gate verdict. A capture that fails the gate can never enter a
+  /// cohort, and every observation derived from it is UNKNOWN.
+  qualityPassed  Boolean       @default(false)
+  qualityReport  Json?
+  /// Path to the stored DOM snapshot (text nodes + boxes + interactive elements).
+  domSnapshotPath String?
+  /// Fingerprint of on-screen text. Used instead of an image hash to decide
+  /// whether the page actually changed - carousels make pixel hashes useless.
+  contentSignature String?
+  capturedAt       DateTime?
+
+  /// Which institution this capture belongs to. Needed so a cohort can keep
+  /// one capture per institution.
+  institution    String?
+  pageRole       PageRole? @default(DECISION)
+  sector         Sector?   @relation(fields: [sectorId], references: [id])
+  sectorId       String?
+
+  regions      Region[]
+  observations Observation[]
+  cohorts      CohortMember[]
+
   status BenchmarkStatus @default(ACTIVE)
 
   scrapingJob   ScrapingJob? @relation(fields: [scrapingJobId], references: [id])
@@ -200,4 +226,362 @@ model DiscoveryRun {
 
   @@index([status])
   @@index([createdAt])
+}
+
+// ============================================================================
+// MEASUREMENT LAYER
+//
+// The collection model ("scrape many, score each") answers "how many examples
+// do we have". It cannot answer "is this claim true" or "how common is this
+// among comparable institutions".
+//
+// Three rules shape these models:
+//   1. AI detects, software decides. Status, coordinates, denominators and
+//      percentages are all computed here, never taken from a model response.
+//   2. Evidence coordinates never come from the model. The model reports text
+//      it read; software locates that text in the DOM (or OCR boxes) and
+//      derives the box. No match -> the observation becomes UNKNOWN.
+//   3. PRESENT can be proven, ABSENT cannot. ABSENT is a claim about the whole
+//      page; a phone number inside an image never appears in the DOM. So a
+//      deterministic ABSENT waits for model confirmation before publishing.
+// ============================================================================
+
+enum Viewport {
+  DESKTOP
+  MOBILE
+}
+
+enum CaptureStatus {
+  SUCCESS
+  BLOCKED
+  ERROR
+  TIMEOUT
+  ROBOTS_DENIED
+}
+
+/// Generic page role. Sector-agnostic: each sector maps its own page to a role.
+/// DECISION is the page where the user actually decides (loan product page,
+/// hospital department page, course page, product page) - not the home page.
+enum PageRole {
+  ENTRY
+  LISTING
+  DECISION
+  CONVERSION
+  TRUST
+}
+
+enum RegionType {
+  MENU
+  HERO
+  CONTENT
+  CARD_LIST
+  CALCULATOR
+  FORM
+  TRUST
+  FOOTER
+  COOKIE
+}
+
+enum RegionSource {
+  DOM
+  OCR
+}
+
+/// The seven measurement patterns. Fixed in software; criteria are data.
+/// P1 presence, P2 placement, P3 specificity, P4 interactivity level,
+/// P5 depth, P6 density, P7 trust-signal type.
+enum MeasurementPattern {
+  P1
+  P2
+  P3
+  P4
+  P5
+  P6
+  P7
+}
+
+enum CriterionLayer {
+  UNIVERSAL
+  SECTOR
+}
+
+enum ObservationStatus {
+  PRESENT
+  ABSENT
+  UNKNOWN
+  NOT_APPLICABLE
+}
+
+enum DomMatch {
+  EXACT
+  NORMALIZED
+  NONE
+}
+
+/// MODEL_QUOTE: the model named a text, software searched for it. Minimum
+/// length and ambiguity rules apply.
+/// DOM_ELEMENT: software found the element itself. Nothing was searched, so the
+/// box is exact and the minimum-length rule does not apply - otherwise a
+/// two-letter language toggle could never be evidenced.
+enum EvidenceSource {
+  MODEL_QUOTE
+  DOM_ELEMENT
+}
+
+enum ReviewStatus {
+  PENDING
+  AUTO_APPROVED
+  APPROVED
+  REJECTED
+}
+
+enum PublishState {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+/// Outermost comparison boundary. Banking, private hospital, private school,
+/// retail chain. Two sectors are never mixed into one denominator.
+model Sector {
+  id      String       @id @default(cuid())
+  slug    String       @unique
+  name    String
+  country String       @default("TR")
+  state   PublishState @default(DRAFT)
+
+  criteria   Criterion[]
+  packages   CriteriaPackage[]
+  cohorts    Cohort[]
+  benchmarks Benchmark[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// A criterion is data, not code: one measurement pattern + one target object +
+/// one evaluation rule. Adding a sector means writing rows, not writing code.
+model Criterion {
+  id      String             @id @default(cuid())
+  code    String
+  layer   CriterionLayer
+  pattern MeasurementPattern
+
+  question String
+  /// The rule a human labeller follows. A criterion whose rule cannot be
+  /// written down does not belong in the catalogue.
+  rule     String  @db.Text
+  /// When this criterion does not apply at all (-> NOT_APPLICABLE).
+  naRule   String? @db.Text
+
+  /// Ordered rungs for ordinal patterns, e.g. ["rakam","aralik","kosullu",...]
+  steps          Json @default("[]")
+  /// Bucket thresholds for P6, e.g. {"low":[0,4],"mid":[5,8],"high":[9,null]}
+  bucketLimits   Json?
+  /// A universal criterion whose target object comes from the sector package.
+  parametric     Boolean @default(false)
+  /// When a sector criterion measures the same target as a universal one, the
+  /// sector code wins and only ONE observation is written. Otherwise the same
+  /// fact is counted twice and the distribution breaks.
+  supersedesCode String?
+  /// Region this criterion attaches to when it produces no evidence of its own
+  /// (P5 depth, P6 counts).
+  defaultRegion  RegionType?
+
+  sector   Sector? @relation(fields: [sectorId], references: [id], onDelete: Cascade)
+  sectorId String?
+
+  packages     PackageCriterion[]
+  bindings     CriterionBinding[]
+  observations Observation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([code, sectorId])
+  @@index([layer])
+  @@index([pattern])
+}
+
+/// A versioned criterion set for one sector: universal layer + sector layer.
+model CriteriaPackage {
+  id      String       @id @default(cuid())
+  version String
+  state   PublishState @default(DRAFT)
+
+  sector   Sector @relation(fields: [sectorId], references: [id], onDelete: Cascade)
+  sectorId String
+
+  criteria     PackageCriterion[]
+  bindings     CriterionBinding[]
+  observations Observation[]
+  cohorts      Cohort[]
+
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@unique([sectorId, version])
+}
+
+model PackageCriterion {
+  package     CriteriaPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  packageId   String
+  criterion   Criterion       @relation(fields: [criterionId], references: [id], onDelete: Cascade)
+  criterionId String
+
+  @@id([packageId, criterionId])
+}
+
+/// What a parametric universal criterion looks at in this sector. U14 "price
+/// specificity" becomes interest rate in banking, tuition in education.
+model CriterionBinding {
+  package     CriteriaPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  packageId   String
+  criterion   Criterion       @relation(fields: [criterionId], references: [id], onDelete: Cascade)
+  criterionId String
+
+  targetObject String
+
+  @@id([packageId, criterionId])
+}
+
+/// A named rectangle on a capture. This is what the report highlights on hover.
+/// Boxes are DOM-anchored, never drawn by a model.
+model Region {
+  id   String     @id @default(cuid())
+  type RegionType
+  name String
+
+  x Int
+  y Int
+  w Int
+  h Int
+
+  /// CSS selector the box came from - makes the box re-verifiable.
+  selector   String?
+  source     RegionSource @default(DOM)
+  lowConfidence Boolean   @default(false)
+  order      Int          @default(0)
+
+  benchmark   Benchmark @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)
+  benchmarkId String
+
+  observations Observation[]
+
+  createdAt DateTime @default(now())
+
+  @@index([benchmarkId, order])
+  @@index([type])
+}
+
+/// One criterion's result on one capture.
+model Observation {
+  id String @id @default(cuid())
+
+  /// The rung reached, e.g. "kosullu". Null when nothing was found.
+  value      String?
+  /// Index of `value` inside Criterion.steps - lets the UI draw a ladder.
+  valueIndex Int?
+  /// Raw count for P6, kept alongside the bucket.
+  rawCount   Int?
+
+  status ObservationStatus
+  /// How the evidence text was matched. A NONE here is the system's health
+  /// signal and is tracked on the dashboard.
+  domMatch DomMatch @default(NONE)
+  /// How many repeat runs agreed. Disagreement forces UNKNOWN.
+  repeatAgreement Int @default(1)
+  /// Set when a deterministic ABSENT still needs the model to confirm on the
+  /// screenshot. Such an observation is not published.
+  awaitingConfirmation Boolean @default(false)
+  /// Why it is UNKNOWN or NOT_APPLICABLE - shown to the user verbatim.
+  note String? @db.Text
+
+  reviewStatus ReviewStatus @default(PENDING)
+  /// Raw model response, kept for audit even when not published.
+  modelClaim   Json?
+
+  benchmark   Benchmark @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)
+  benchmarkId String
+  criterion   Criterion @relation(fields: [criterionId], references: [id])
+  criterionId String
+  package     CriteriaPackage @relation(fields: [packageId], references: [id])
+  packageId   String
+  region      Region?   @relation(fields: [regionId], references: [id], onDelete: SetNull)
+  regionId    String?
+
+  evidence Evidence[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([benchmarkId, criterionId, packageId])
+  @@index([status])
+  @@index([regionId])
+  @@index([domMatch])
+}
+
+model Evidence {
+  id String @id @default(cuid())
+
+  /// The text as it appears in the DOM - never the folded search form.
+  text     String @db.Text
+  selector String?
+  source   EvidenceSource @default(MODEL_QUOTE)
+
+  x Int?
+  y Int?
+  w Int?
+  h Int?
+
+  verified Boolean @default(false)
+  /// More than one place matched, so the box is not certain. Criteria that
+  /// measure placement must not accept ambiguous evidence.
+  ambiguous Boolean @default(false)
+
+  observation   Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+  observationId String
+
+  createdAt DateTime @default(now())
+
+  @@index([observationId])
+}
+
+/// The comparison set: sector + page role + viewport + country. This is the
+/// denominator. One institution contributes at most one capture.
+model Cohort {
+  id       String   @id @default(cuid())
+  pageRole PageRole
+  viewport Viewport
+  country  String   @default("TR")
+  version  String   @default("v1")
+  state    PublishState @default(DRAFT)
+
+  sector   Sector @relation(fields: [sectorId], references: [id], onDelete: Cascade)
+  sectorId String
+  package   CriteriaPackage? @relation(fields: [packageId], references: [id])
+  packageId String?
+
+  members CohortMember[]
+
+  frozenAt  DateTime?
+  createdAt DateTime  @default(now())
+
+  @@unique([sectorId, pageRole, viewport, country, version])
+}
+
+/// One row per institution per cohort. The unique constraint is the point:
+/// five captures of the same bank must never count as five banks.
+model CohortMember {
+  cohort   Cohort @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  cohortId String
+
+  /// Institution identity. Benchmarks are grouped by this, so the uniqueness
+  /// rule can be enforced in the database rather than in application code.
+  institution String
+
+  benchmark   Benchmark @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)
+  benchmarkId String
+
+  @@id([cohortId, institution])
+  @@index([benchmarkId])
 }
