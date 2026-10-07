@@ -6,3 +6,7 @@ node_modules
 .DS_Store
 docker-compose.yml
 .claude
+
+# Railway: uygulama repo kökünde değil, deneme2/ altında.
+# Servis ayarında rootDirectory = deneme2 olmalı; dockerfilePath BOŞ bırakılmalı
+# (dolu olduğunda Railway Dockerfile aramasını kökte yapıp kayıt üretmeden düşüyor).
