@@ -13,6 +13,10 @@ const prisma = new PrismaClient();
 
 interface CriterionJson {
   code: string;
+  featureId?: string;
+  requiredEvidence?: string[];
+  exclusions?: string[];
+  scopeRegions?: RegionType[];
   pattern: MeasurementPattern;
   question: string;
   rule: string;
@@ -26,8 +30,11 @@ interface CriterionJson {
 
 interface UniversalJson {
   version: string;
+  dictionaryVersion?: number;
   criteria: CriterionJson[];
 }
+
+let dictionaryVersion = 1;
 
 interface SectorJson {
   sectorSlug: string;
@@ -42,6 +49,11 @@ interface SectorJson {
 async function upsertCriterion(c: CriterionJson, sectorId: string | null) {
   const data = {
     pattern: c.pattern,
+    featureId: c.featureId ?? null,
+    requiredEvidence: c.requiredEvidence ?? [],
+    exclusions: c.exclusions ?? [],
+    scopeRegions: c.scopeRegions ?? [],
+    dictionaryVersion: dictionaryVersion,
     question: c.question,
     rule: c.rule,
     naRule: c.naRule ?? null,
@@ -70,6 +82,8 @@ async function main() {
   const sector: SectorJson = JSON.parse(
     await readFile("data/criteria/banking.json", "utf8"),
   );
+
+  dictionaryVersion = universal.dictionaryVersion ?? 1;
 
   const s = await prisma.sector.upsert({
     where: { slug: sector.sectorSlug },

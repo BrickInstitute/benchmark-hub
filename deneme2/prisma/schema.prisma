@@ -59,6 +59,7 @@ model Benchmark {
   regions      Region[]
   observations Observation[]
   cohorts      CohortMember[]
+  featureCandidates FeatureCandidate[]
 
   status BenchmarkStatus @default(ACTIVE)
 
@@ -328,6 +329,15 @@ enum EvidenceSource {
   DOM_ELEMENT
 }
 
+/// VISUAL - read off the screenshot
+/// DOM - taken from page structure
+/// INTERACTION - behaviour was exercised and observed
+enum ObservationModality {
+  VISUAL
+  DOM
+  INTERACTION
+}
+
 enum ReviewStatus {
   PENDING
   AUTO_APPROVED
@@ -354,6 +364,7 @@ model Sector {
   packages   CriteriaPackage[]
   cohorts    Cohort[]
   benchmarks Benchmark[]
+  featureCandidates FeatureCandidate[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -366,6 +377,25 @@ model Criterion {
   code    String
   layer   CriterionLayer
   pattern MeasurementPattern
+
+  /// Stable, human-readable function identity, e.g. "loan.calculator.embedded".
+  /// Banks name the same function differently ("Kredini hesapla", "Taksitini
+  /// öğren"); the feature id is what makes them comparable. The catalogue code
+  /// (B03) is a catalogue address and may be renumbered - this must not be.
+  featureId         String?
+  /// Bumped when the meaning of the feature changes. Observations carry the
+  /// version they were made under, so a redefinition does not silently
+  /// reinterpret old records.
+  dictionaryVersion Int     @default(1)
+  /// What has to be visible for this to count. Narrative, used in the prompt
+  /// and by human labellers, so both follow the same rule.
+  requiredEvidence  Json    @default("[]")
+  /// What must NOT be counted, e.g. "a link to a calculator is not a calculator".
+  exclusions        Json    @default("[]")
+  /// Region types this criterion may draw evidence from. Empty means the whole
+  /// page. A loan-rate criterion scoped to the loan section cannot be satisfied
+  /// by a deposit rate elsewhere on the page.
+  scopeRegions      RegionType[] @default([])
 
   question String
   /// The rule a human labeller follows. A criterion whose rule cannot be
@@ -494,6 +524,15 @@ model Observation {
   /// Set when a deterministic ABSENT still needs the model to confirm on the
   /// screenshot. Such an observation is not published.
   awaitingConfirmation Boolean @default(false)
+  /// How this was observed. A calculator seen in a screenshot is VISUAL; the
+  /// same calculator proven to recompute on input would be INTERACTION. The
+  /// distinction stops "it looks like a calculator" from being reported as
+  /// "the calculator works".
+  modality ObservationModality @default(DOM)
+  /// Only true when behaviour was actually exercised, never when inferred.
+  interactionVerified Boolean @default(false)
+  /// Feature dictionary version in force when this was recorded.
+  dictionaryVersion Int @default(1)
   /// Why it is UNKNOWN or NOT_APPLICABLE - shown to the user verbatim.
   note String? @db.Text
 
@@ -584,4 +623,32 @@ model CohortMember {
 
   @@id([cohortId, institution])
   @@index([benchmarkId])
+}
+
+
+/// Something the model noticed that the dictionary does not cover yet.
+///
+/// Never silently dropped and never silently added: an unreviewed candidate
+/// has no effect on any statistic. Once accepted into the dictionary, earlier
+/// captures must be RE-ANALYSED for it - they cannot be assumed ABSENT,
+/// because nobody ever looked.
+model FeatureCandidate {
+  id          String  @id @default(cuid())
+  proposedId  String
+  description String  @db.Text
+  evidenceText String? @db.Text
+
+  benchmark   Benchmark? @relation(fields: [benchmarkId], references: [id], onDelete: SetNull)
+  benchmarkId String?
+  sector      Sector?    @relation(fields: [sectorId], references: [id], onDelete: SetNull)
+  sectorId    String?
+
+  reviewStatus ReviewStatus @default(PENDING)
+  seenCount    Int          @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([proposedId, sectorId])
+  @@index([reviewStatus])
 }

@@ -29,6 +29,10 @@ export interface CriterionSpec {
   steps: string[];
   /** For parametric criteria: what this criterion looks at in this sector. */
   targetObject?: string | null;
+  /** What must be visible for this to count. */
+  requiredEvidence?: string[];
+  /** What must NOT be counted - e.g. a link to a calculator is not a calculator. */
+  exclusions?: string[];
 }
 
 export interface ModelClaim {
@@ -86,9 +90,15 @@ export async function sliceScreenshot(full: Buffer): Promise<Buffer[]> {
 function buildPrompt(criteria: CriterionSpec[], snapshot: DomSnapshot): string {
   const lines = criteria.map((c) => {
     const target = c.targetObject ? `\n  Hedef nesne: ${c.targetObject}` : "";
+    const required = c.requiredEvidence?.length
+      ? `\n  Sayılması için görünmesi gerekenler: ${c.requiredEvidence.join("; ")}`
+      : "";
+    const excluded = c.exclusions?.length
+      ? `\n  SAYILMAYACAK olanlar: ${c.exclusions.join("; ")}`
+      : "";
     return `- ${c.code} (${c.pattern})
   Soru: ${c.question}
-  Kural: ${c.rule}${target}
+  Kural: ${c.rule}${target}${required}${excluded}
   İzinli değerler: ${c.steps.join(" | ")}`;
   });
 

@@ -24,6 +24,12 @@ export interface EvidenceResult {
   candidateCount: number;
   ambiguous: boolean;
   origin: EvidenceOrigin;
+  /**
+   * The quote may well exist on the page, but not inside the region this
+   * criterion is allowed to look at. Reported separately from "not found at
+   * all" so the reason reaching the user is accurate.
+   */
+  outOfScope: boolean;
 }
 
 const NOT_FOUND: EvidenceResult = {
@@ -36,6 +42,7 @@ const NOT_FOUND: EvidenceResult = {
   candidateCount: 0,
   ambiguous: false,
   origin: "MODEL_QUOTE",
+  outOfScope: false,
 };
 
 /**
@@ -108,7 +115,19 @@ function build(
     candidateCount,
     ambiguous: candidateCount > 1,
     origin: "MODEL_QUOTE",
+    outOfScope: false,
   };
+}
+
+/** Is `inner` contained in `outer` (allowing a small margin)? */
+function isInside(inner: Box, outer: Box): boolean {
+  const pad = 4;
+  return (
+    inner.x >= outer.x - pad &&
+    inner.y >= outer.y - pad &&
+    inner.x + inner.w <= outer.x + outer.w + pad &&
+    inner.y + inner.h <= outer.y + outer.h + pad
+  );
 }
 
 /**
@@ -118,11 +137,28 @@ function build(
  *
  * Only on-screen nodes are searched. Text in a hidden carousel slide is
  * invisible to the user and its box lands nowhere in the screenshot.
+ *
+ * `scope` restricts the search to given regions. This is not an optimisation,
+ * it is a correctness rule: a criterion about the LOAN interest rate must not
+ * be satisfied by a DEPOSIT rate printed elsewhere on the same page. Without a
+ * scope, any number anywhere can "prove" any claim about a number.
  */
-export function findEvidence(quote: string, snapshot: DomSnapshot): EvidenceResult {
+export function findEvidence(
+  quote: string,
+  snapshot: DomSnapshot,
+  scope?: Box[],
+): EvidenceResult {
   const clean = quote.trim();
   if (clean.length < MIN_QUOTE_LENGTH) return NOT_FOUND;
-  const nodes = snapshot.textNodes.filter((n) => n.onScreen);
+  let nodes = snapshot.textNodes.filter((n) => n.onScreen);
+
+  if (scope && scope.length > 0) {
+    const scoped = nodes.filter((n) => scope.some((box) => isInside(n.box, box)));
+    // An empty scope means the section itself was not found on this page, which
+    // is information in its own right - not a licence to search everywhere.
+    nodes = scoped;
+    if (nodes.length === 0) return { ...NOT_FOUND, outOfScope: true };
+  }
 
   const stages: Array<[MatchKind, Transform]> = [
     ["EXACT", (s) => s],
@@ -164,6 +200,7 @@ export function evidenceFromElement(el: {
     candidateCount: 1,
     ambiguous: false,
     origin: "DOM_ELEMENT",
+    outOfScope: false,
   };
 }
 

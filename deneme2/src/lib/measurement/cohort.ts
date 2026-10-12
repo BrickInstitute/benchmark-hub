@@ -40,11 +40,20 @@ export interface PeerOutcome {
 
 export interface CriterionDistribution {
   code: string;
+  /** Stable function identity - this is what makes cross-sector reuse possible. */
+  featureId: string | null;
   question: string;
   pattern: string;
   denominator: number;
   rows: Array<{ value: string; count: number; percent: number | null }>;
   excluded: { unknown: number; notApplicable: number };
+  /**
+   * Prevalence and coverage are different numbers and must both be shown.
+   * "28 of 40 measurable institutions have it (70%)" is a finding.
+   * "only 40 of 50 could be measured (80%)" is how much to trust it.
+   * Reporting the first without the second overstates the result.
+   */
+  coverage: { measured: number; cohortSize: number; percent: number | null };
   targetValue: string | null;
   targetStatus: ObservationStatus | null;
 }
@@ -56,6 +65,8 @@ export interface CohortRunResult {
   peers: PeerOutcome[];
   distributions: CriterionDistribution[];
   percentagesWithheld: boolean;
+  /** How many proposed institutions actually made it into the cohort. */
+  cohortCoverage: { accepted: number; proposed: number; percent: number };
 }
 
 /** Cheap page-type check: does the peer page actually talk about the topic? */
@@ -249,13 +260,20 @@ export async function buildPeerCohort(options: {
       .map((o) => ({ value: o.value, status: o.status }));
     const d = distribution(rows);
     const t = targetByCriterion.get(c.id);
+    const cohortSize = acceptedBenchmarks.length;
     return {
       code: c.code,
+      featureId: c.featureId,
       question: c.question,
       pattern: c.pattern,
       denominator: d.denominator,
       rows: d.rows,
       excluded: d.excluded,
+      coverage: {
+        measured: d.denominator,
+        cohortSize,
+        percent: cohortSize === 0 ? null : Math.round((d.denominator / cohortSize) * 100),
+      },
       targetValue: t?.value ?? null,
       targetStatus: t?.status ?? null,
     };
@@ -268,6 +286,14 @@ export async function buildPeerCohort(options: {
     peers: outcomes,
     distributions,
     percentagesWithheld: acceptedBenchmarks.length < MIN_DENOMINATOR_FOR_PERCENT,
+    cohortCoverage: {
+      accepted: acceptedBenchmarks.length,
+      proposed: candidates.length,
+      percent:
+        candidates.length === 0
+          ? 0
+          : Math.round((acceptedBenchmarks.length / candidates.length) * 100),
+    },
   };
 }
 

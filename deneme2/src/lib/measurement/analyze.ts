@@ -321,6 +321,8 @@ export async function analyze(request: AnalyzeRequest): Promise<AnalyzeResult> {
       rule: c.rule,
       steps: (c.steps as string[]) ?? [],
       targetObject: bindingByCriterion.get(c.id) ?? null,
+      requiredEvidence: (c.requiredEvidence as string[]) ?? [],
+      exclusions: (c.exclusions as string[]) ?? [],
     }));
 
     const storage = getStorageProvider();
@@ -356,7 +358,18 @@ export async function analyze(request: AnalyzeRequest): Promise<AnalyzeResult> {
         continue;
       }
 
-      const evidence = claim.quote ? findEvidence(claim.quote, snapshot) : null;
+      // Scope: the criterion may only draw evidence from its own regions.
+      // Without this, a loan-rate claim could be "proven" by a deposit rate
+      // printed somewhere else on the same page.
+      const scopeTypes = criterion.scopeRegions as RegionType[];
+      const scopeBoxes =
+        scopeTypes.length > 0
+          ? regions.filter((r) => scopeTypes.includes(r.type as RegionType)).map((r) => r.box)
+          : undefined;
+
+      const evidence = claim.quote
+        ? findEvidence(claim.quote, snapshot, scopeBoxes)
+        : null;
       const placementMatters = criterion.pattern === "P2";
       const verified = evidence !== null && isUsable(evidence, placementMatters);
 
@@ -399,9 +412,11 @@ export async function analyze(request: AnalyzeRequest): Promise<AnalyzeResult> {
           status === "UNKNOWN"
             ? !qualityPassed
               ? "capture did not pass the quality gate"
-              : claim.quote
-                ? "model quote could not be found on the page, so the claim is unverified"
-                : "model returned no quote"
+              : evidence?.outOfScope
+                ? `quote was not inside the regions this criterion may use (${scopeTypes.join(", ")})`
+                : claim.quote
+                  ? "model quote could not be found on the page, so the claim is unverified"
+                  : "model returned no quote"
             : null,
         awaitingConfirmation: needsAbsenceConfirmation(status, criterion.pattern),
         modelClaim: claim as unknown as object,

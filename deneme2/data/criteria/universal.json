@@ -9,26 +9,82 @@
       "question": "Ana menüde kaç birinci seviye öğe var?",
       "rule": "Yalnızca görünür birinci seviye öğeler sayılır. Katlanmış 'diğer/menü' altındaki öğeler açılmadan sayılmaz. Dil değiştirici, arama simgesi ve metinsiz simge bağlantıları sayılmaz. Aynı metnin iki kez geçmesi tek öğedir.",
       "naRule": "Sayfada ana menü yok. Mobil görünümde menü hamburger altında katlanmışsa ölçüm etkileşim gerektirir ve v1 kapsamı dışındadır. Katlanmış menü hiçbir koşulda absent sayılmaz.",
-      "steps": ["az", "orta", "cok"],
-      "bucketLimits": { "az": [0, 4], "orta": [5, 8], "cok": [9, null] },
-      "defaultRegion": "MENU"
+      "steps": [
+        "az",
+        "orta",
+        "cok"
+      ],
+      "bucketLimits": {
+        "az": [
+          0,
+          4
+        ],
+        "orta": [
+          5,
+          8
+        ],
+        "cok": [
+          9,
+          null
+        ]
+      },
+      "defaultRegion": "MENU",
+      "featureId": "nav.primary.item_count",
+      "scopeRegions": [
+        "MENU"
+      ]
     },
     {
       "code": "U02",
       "pattern": "P1",
       "question": "Site içi arama var mı?",
       "rule": "Sayfada çalışan bir arama girişi veya aramayı açan simge bulunmalı. Footer'daki site haritası bağlantısı arama sayılmaz.",
-      "steps": ["var", "yok"],
-      "defaultRegion": "MENU"
+      "steps": [
+        "var",
+        "yok"
+      ],
+      "defaultRegion": "MENU",
+      "featureId": "site.search.access",
+      "requiredEvidence": [
+        "Arama girişi veya aramayı açan simge"
+      ],
+      "exclusions": [
+        "Footer site haritası bağlantısı"
+      ],
+      "scopeRegions": [
+        "MENU",
+        "HERO"
+      ]
     },
     {
       "code": "U03",
       "pattern": "P6",
       "question": "İlk ekranda kaç birincil eylem çağrısı (CTA) var?",
       "rule": "Birincil CTA = buton görünümlü ve eylem fiili içeren öğe. Menü bağlantıları, çerez penceresi butonları ve dil değiştirici sayılmaz.",
-      "steps": ["az", "orta", "cok"],
-      "bucketLimits": { "az": [1, 1], "orta": [2, 3], "cok": [4, null] },
-      "defaultRegion": "HERO"
+      "steps": [
+        "az",
+        "orta",
+        "cok"
+      ],
+      "bucketLimits": {
+        "az": [
+          1,
+          1
+        ],
+        "orta": [
+          2,
+          3
+        ],
+        "cok": [
+          4,
+          null
+        ]
+      },
+      "defaultRegion": "HERO",
+      "featureId": "cta.primary.count_above_fold",
+      "scopeRegions": [
+        "HERO"
+      ]
     },
     {
       "code": "U04",
@@ -36,57 +92,133 @@
       "question": "Birincil CTA nerede konumlanmış?",
       "rule": "Sayfanın ana eylemini temsil eden ilk buton esas alınır. Konum, DOM kutusunun y değeri ile görünüm yüksekliği karşılaştırılarak yazılım tarafından hesaplanır.",
       "naRule": "Birincil CTA tanımlanamıyor.",
-      "steps": ["ilk_ekran", "ilk_kaydirma", "sayfa_alti", "yok"],
-      "defaultRegion": "HERO"
+      "steps": [
+        "ilk_ekran",
+        "ilk_kaydirma",
+        "sayfa_alti",
+        "yok"
+      ],
+      "defaultRegion": "HERO",
+      "featureId": "cta.primary.placement",
+      "scopeRegions": [
+        "HERO"
+      ]
     },
     {
       "code": "U05",
       "pattern": "P3",
       "question": "Değer önerisi ne kadar somut?",
       "rule": "Hero alanındaki ana başlık değerlendirilir. rakam = sayısal fayda ('48 saatte sonuç'); aralik = sayısal fayda aralıkla; kosullu = fayda somut ama şarta bağlı; yonlendirme = jenerik slogan, ölçülebilir bir şey söylemiyor; yok = metin yok, yalnızca görsel.",
-      "steps": ["rakam", "aralik", "kosullu", "yonlendirme", "yok"],
-      "defaultRegion": "HERO"
+      "steps": [
+        "rakam",
+        "aralik",
+        "kosullu",
+        "yonlendirme",
+        "yok"
+      ],
+      "defaultRegion": "HERO",
+      "featureId": "hero.value_proposition.specificity",
+      "exclusions": [
+        "Yalnızca görsel, metinsiz hero"
+      ],
+      "scopeRegions": [
+        "HERO"
+      ]
     },
     {
       "code": "U06",
       "pattern": "P5",
       "question": "Dönüşüm hedefine kaç tıklama uzaklıkta?",
       "rule": "Hedef, sektör paketindeki dönüşüm tanımından gelir. Bağlantı grafiği üzerinden yazılım yürütür; model yalnızca hedef bağlantıyı işaretler. 'ulasilamadi' sonucu unknown'a eşlenir, absent'a değil.",
-      "steps": ["0", "1", "2", "3_arti", "ulasilamadi"],
+      "steps": [
+        "0",
+        "1",
+        "2",
+        "3_arti",
+        "ulasilamadi"
+      ],
       "parametric": true,
-      "defaultRegion": "CONTENT"
+      "defaultRegion": "CONTENT",
+      "featureId": "conversion.depth"
     },
     {
       "code": "U07",
       "pattern": "P2",
       "question": "İletişim bilgisi (telefon veya adres) nerede?",
       "rule": "Telefon numarası, tel: bağlantısı veya fiziksel adres. Footer'da yer alması sayfa_alti sayılır.",
-      "steps": ["ilk_ekran", "ilk_kaydirma", "sayfa_alti", "yok"],
-      "defaultRegion": "FOOTER"
+      "steps": [
+        "ilk_ekran",
+        "ilk_kaydirma",
+        "sayfa_alti",
+        "yok"
+      ],
+      "defaultRegion": "FOOTER",
+      "featureId": "contact.info.placement",
+      "requiredEvidence": [
+        "Telefon numarası, tel: bağlantısı veya açık adres"
+      ],
+      "scopeRegions": [
+        "FOOTER",
+        "CONTENT",
+        "MENU"
+      ]
     },
     {
       "code": "U08",
       "pattern": "P4",
       "question": "Canlı destek hangi düzeyde sunuluyor?",
       "rule": "gomulu = sayfada açılan sohbet penceresi; ayri_sayfa = iletişim formuna giden bağlantı; statik = yalnızca telefon/e-posta yazılı; yok = hiçbiri.",
-      "steps": ["gomulu", "ayri_sayfa", "statik", "yok"],
-      "defaultRegion": "CONTENT"
+      "steps": [
+        "gomulu",
+        "ayri_sayfa",
+        "statik",
+        "yok"
+      ],
+      "defaultRegion": "CONTENT",
+      "featureId": "support.live.level",
+      "exclusions": [
+        "Yalnızca iletişim sayfasına bağlantı gömülü sohbet sayılmaz"
+      ]
     },
     {
       "code": "U09",
       "pattern": "P7",
       "question": "Hangi güven sinyali türleri kullanılmış?",
       "rule": "Sayfada görünen sinyaller çoklu işaretlenir. Footer'daki sertifika/logo alanları dahildir. Boş liste absent sayılır.",
-      "steps": ["musteri_yorumu", "sayisal_iddia", "sertifika_akreditasyon", "basin_odul", "kurumsal_referans"],
-      "defaultRegion": "TRUST"
+      "steps": [
+        "musteri_yorumu",
+        "sayisal_iddia",
+        "sertifika_akreditasyon",
+        "basin_odul",
+        "kurumsal_referans"
+      ],
+      "defaultRegion": "TRUST",
+      "featureId": "trust.signal.types",
+      "exclusions": [
+        "Ürün logosu güven sinyali değildir"
+      ],
+      "scopeRegions": [
+        "TRUST",
+        "FOOTER"
+      ]
     },
     {
       "code": "U10",
       "pattern": "P1",
       "question": "Yasal veya gizlilik bilgisine erişim var mı?",
       "rule": "KVKK aydınlatma metni, gizlilik politikası veya kullanım şartlarına giden bir bağlantı yeterlidir.",
-      "steps": ["var", "yok"],
-      "defaultRegion": "FOOTER"
+      "steps": [
+        "var",
+        "yok"
+      ],
+      "defaultRegion": "FOOTER",
+      "featureId": "legal.policy.access",
+      "requiredEvidence": [
+        "KVKK, gizlilik veya kullanım şartlarına giden bağlantı"
+      ],
+      "scopeRegions": [
+        "FOOTER"
+      ]
     },
     {
       "code": "U11",
@@ -94,9 +226,30 @@
       "question": "Dönüşüm formunda kaç zorunlu alan var?",
       "rule": "Yalnızca bu sayfadaki form sayılır. Zorunluluk işareti veya required niteliği esas alınır. Onay kutuları alan sayılır.",
       "naRule": "Bu sayfada form yok.",
-      "steps": ["az", "orta", "cok"],
-      "bucketLimits": { "az": [0, 3], "orta": [4, 7], "cok": [8, null] },
-      "defaultRegion": "FORM"
+      "steps": [
+        "az",
+        "orta",
+        "cok"
+      ],
+      "bucketLimits": {
+        "az": [
+          0,
+          3
+        ],
+        "orta": [
+          4,
+          7
+        ],
+        "cok": [
+          8,
+          null
+        ]
+      },
+      "defaultRegion": "FORM",
+      "featureId": "form.required_field_count",
+      "scopeRegions": [
+        "FORM"
+      ]
     },
     {
       "code": "U12",
@@ -104,17 +257,46 @@
       "question": "Çerez/izin penceresi ilk ekranın yüzde kaçını kaplıyor?",
       "rule": "Pencere kutusunun alanı / görünüm alanı, yüzde olarak. Ham sayı yüzde değeridir.",
       "naRule": "Çerez penceresi çıkmadı.",
-      "steps": ["az", "orta", "cok"],
-      "bucketLimits": { "az": [0, 15], "orta": [16, 40], "cok": [41, null] },
-      "defaultRegion": "COOKIE"
+      "steps": [
+        "az",
+        "orta",
+        "cok"
+      ],
+      "bucketLimits": {
+        "az": [
+          0,
+          15
+        ],
+        "orta": [
+          16,
+          40
+        ],
+        "cok": [
+          41,
+          null
+        ]
+      },
+      "defaultRegion": "COOKIE",
+      "featureId": "consent.dialog.coverage",
+      "scopeRegions": [
+        "COOKIE"
+      ]
     },
     {
       "code": "U13",
       "pattern": "P1",
       "question": "Dil seçeneği var mı?",
       "rule": "Sayfada görünür bir dil değiştirici bulunmalı.",
-      "steps": ["var", "yok"],
-      "defaultRegion": "MENU"
+      "steps": [
+        "var",
+        "yok"
+      ],
+      "defaultRegion": "MENU",
+      "featureId": "locale.switcher.access",
+      "scopeRegions": [
+        "MENU",
+        "FOOTER"
+      ]
     },
     {
       "code": "U14",
@@ -122,9 +304,24 @@
       "question": "Fiyat/maliyet bilgisi ne kadar somut?",
       "rule": "Hedef nesne sektör paketindeki bağlamadan gelir. rakam = tek ve kesin sayı; aralik = alt-üst sınır; kosullu = sayı var ama bağlayıcı değil ('...dan başlayan'); yonlendirme = sayı yok, öğrenmek için eylem isteniyor; yok = bilgi hiç yer almıyor.",
       "naRule": "Sektörde hizmet ücretsiz.",
-      "steps": ["rakam", "aralik", "kosullu", "yonlendirme", "yok"],
+      "steps": [
+        "rakam",
+        "aralik",
+        "kosullu",
+        "yonlendirme",
+        "yok"
+      ],
       "parametric": true,
-      "defaultRegion": "CONTENT"
+      "defaultRegion": "CONTENT",
+      "featureId": "price.specificity",
+      "exclusions": [
+        "Kampanya görselindeki okunamayan rakam"
+      ],
+      "scopeRegions": [
+        "CONTENT",
+        "CARD_LIST",
+        "HERO"
+      ]
     },
     {
       "code": "U15",
@@ -132,17 +329,41 @@
       "question": "Hesaplama/sorgulama aracı hangi düzeyde?",
       "rule": "Hedef araç sektör paketindeki bağlamadan gelir. gomulu = araç bu sayfada çalışıyor; ayri_sayfa = araca giden bağlantı var; statik = araç yok ama aynı bilgi tablo/metin olarak verilmiş; yok = hiçbiri.",
       "naRule": "Sektörde araç tanımlı değil.",
-      "steps": ["gomulu", "ayri_sayfa", "statik", "yok"],
+      "steps": [
+        "gomulu",
+        "ayri_sayfa",
+        "statik",
+        "yok"
+      ],
       "parametric": true,
-      "defaultRegion": "CALCULATOR"
+      "defaultRegion": "CALCULATOR",
+      "featureId": "tool.calculator.level",
+      "requiredEvidence": [
+        "Girdi alanı veya sonuç alanı"
+      ],
+      "exclusions": [
+        "Yalnızca araca giden bağlantı gömülü araç sayılmaz"
+      ],
+      "scopeRegions": [
+        "CALCULATOR",
+        "CONTENT",
+        "HERO"
+      ]
     },
     {
       "code": "U16",
       "pattern": "P2",
       "question": "Sayfanın asıl içeriği nerede başlıyor?",
       "rule": "Slider/banner değil, sayfanın konusunu oluşturan içerik bloğu esas alınır.",
-      "steps": ["ilk_ekran", "ilk_kaydirma", "sayfa_alti", "yok"],
-      "defaultRegion": "CONTENT"
+      "steps": [
+        "ilk_ekran",
+        "ilk_kaydirma",
+        "sayfa_alti",
+        "yok"
+      ],
+      "defaultRegion": "CONTENT",
+      "featureId": "content.main.placement"
     }
-  ]
+  ],
+  "dictionaryVersion": 1
 }
