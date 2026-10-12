@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate, formatScore } from "@/lib/utils";
 import { ScoreBreakdown } from "@/components/scoring/score-breakdown";
+import { AnalysisPanel } from "@/components/analysis/analysis-panel";
 
 export default function BenchmarkDetailPage() {
   const params = useParams();
@@ -119,6 +120,7 @@ export default function BenchmarkDetailPage() {
               </CardContent>
             )}
           </Card>
+
         </div>
 
         <div className="space-y-6">
@@ -262,6 +264,8 @@ export default function BenchmarkDetailPage() {
           )}
         </div>
       </div>
+
+      <AnalysisPanel benchmarkId={benchmark.id} />
     </div>
   );
 }
