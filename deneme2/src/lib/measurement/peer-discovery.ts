@@ -250,3 +250,153 @@ export function absoluteUrl(href: string, base: string): string | null {
     return null;
   }
 }
+
+// ---------------------------------------------------------------------------
+// Sitemap discovery
+//
+// Homepage links are not enough. In a real cohort run one bank was rejected
+// with "no equivalent page found among real links" purely because its loan
+// page is not linked from the home page. A sitemap finds pages that navigation
+// hides.
+//
+// The rule does not change: these are CANDIDATE urls. They are still chosen by
+// index from a real list, still captured, and still put through the quality
+// and topic gates before anything counts.
+// ---------------------------------------------------------------------------
+
+const SITEMAP_TIMEOUT_MS = 12_000;
+const MAX_SITEMAP_URLS = 400;
+const MAX_NESTED_SITEMAPS = 5;
+
+async function fetchText(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url, {
+      headers: {
+        "user-agent":
+          process.env.CRAWLER_USER_AGENT ??
+          "BenchmarkHubBot/0.1 (+https://brick.institute/bot)",
+      },
+      signal: AbortSignal.timeout(SITEMAP_TIMEOUT_MS),
+    });
+    if (!res.ok) return null;
+    return await res.text();
+  } catch {
+    return null;
+  }
+}
+
+function extractLocs(xml: string): string[] {
+  const out: string[] = [];
+  const re = /<loc>\s*([^<\s]+)\s*<\/loc>/gi;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(xml)) !== null) out.push(m[1]!);
+  return out;
+}
+
+/** Sitemap urls declared in robots.txt, else the conventional locations. */
+async function sitemapIndexes(origin: string): Promise<string[]> {
+  const robots = await fetchText(`${origin}/robots.txt`);
+  const declared: string[] = [];
+  if (robots) {
+    for (const line of robots.split(/\r?\n/)) {
+      const m = /^\s*sitemap\s*:\s*(\S+)/i.exec(line);
+      if (m) declared.push(m[1]!);
+    }
+  }
+  if (declared.length) return declared.slice(0, MAX_NESTED_SITEMAPS);
+  return [`${origin}/sitemap.xml`, `${origin}/sitemap_index.xml`];
+}
+
+export async function discoverUrlsFromSitemap(origin: string): Promise<string[]> {
+  const seen = new Set<string>();
+  const queue = await sitemapIndexes(origin);
+  let fetched = 0;
+
+  while (queue.length > 0 && seen.size < MAX_SITEMAP_URLS && fetched < MAX_NESTED_SITEMAPS * 2) {
+    const next = queue.shift()!;
+    const xml = await fetchText(next);
+    fetched++;
+    if (!xml) continue;
+
+    const locs = extractLocs(xml);
+    // A sitemap index points at more sitemaps rather than at pages.
+    const isIndex = /<sitemapindex/i.test(xml);
+    for (const loc of locs) {
+      if (isIndex) {
+        if (queue.length < MAX_NESTED_SITEMAPS) queue.push(loc);
+      } else if (loc.startsWith(origin)) {
+        seen.add(loc);
+        if (seen.size >= MAX_SITEMAP_URLS) break;
+      }
+    }
+  }
+  return [...seen];
+}
+
+/**
+ * Picks the equivalent page from sitemap urls.
+ *
+ * Urls are pre-filtered by topic words so the model is not handed hundreds of
+ * unrelated paths, then it chooses by index exactly as it does for homepage
+ * links.
+ */
+export async function resolveEquivalentFromSitemap(
+  origin: string,
+  target: TargetIdentity,
+): Promise<{ href: string; text: string } | null> {
+  const urls = await discoverUrlsFromSitemap(origin);
+  if (urls.length === 0) return null;
+
+  const fold = (s: string) =>
+    s.replace(/[İIı]/g, "i").toLowerCase().replace(/̇/g, "");
+  const tokens = fold(target.pageTopic)
+    .split(/[^a-z0-9çğöşü]+/)
+    .filter((t) => t.length >= 4);
+
+  const scored = urls
+    .map((u) => ({ u, hits: tokens.filter((t) => fold(u).includes(t)).length }))
+    .filter((x) => x.hits > 0)
+    .sort((a, b) => b.hits - a.hits || a.u.length - b.u.length)
+    .slice(0, 60);
+
+  if (scored.length === 0) return null;
+
+  const listing = scored.map((x, i) => `${i}: ${x.u}`).join("\n");
+
+  const result = await askJson<{ index: number; reason: string }>(
+    "choose_url",
+    "Hedef sayfanın muadili olan adresi seç.",
+    {
+      type: "object",
+      properties: {
+        index: {
+          type: "integer",
+          description: "Seçilen adresin listedeki numarası. Uygun adres yoksa -1.",
+        },
+        reason: { type: "string" },
+      },
+      required: ["index", "reason"],
+    },
+    [
+      {
+        type: "text",
+        text: `Hedef sayfa konusu: "${target.pageTopic}" (rol: ${target.pageRole})
+
+Aşağıdaki adresler ${origin} sitesinin sitemap dosyasından alındı.
+Hedefin muadili olan sayfanın NUMARASINI seç.
+
+Kurallar:
+- Yalnızca listedeki numaralardan birini seç. Yeni bir adres yazma.
+- Blog yazısı, haber veya kampanya duyurusu ürün sayfası DEĞİLDİR.
+- Rol ${target.pageRole}: listeleme sayfası ile ürün detay sayfası farklıdır.
+- Alakalı adres yoksa -1 döndür. Eksik liste, yanlış eşleşmeden iyidir.
+
+ADRESLER:
+${listing}`,
+      },
+    ],
+  );
+
+  if (!result || result.index < 0 || result.index >= scored.length) return null;
+  return { href: scored[result.index]!.u, text: "(sitemap)" };
+}

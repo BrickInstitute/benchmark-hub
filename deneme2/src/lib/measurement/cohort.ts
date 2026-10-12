@@ -22,6 +22,7 @@ import {
   homepageUrl,
   identifyTarget,
   proposePeers,
+  resolveEquivalentFromSitemap,
   resolveEquivalentPage,
   type TargetIdentity,
 } from "./peer-discovery";
@@ -144,9 +145,21 @@ export async function buildPeerCohort(options: {
       continue;
     }
 
-    const link = await resolveEquivalentPage(homeCapture.snapshot, identity);
+    // Navigation first, sitemap second. A page that exists but is not linked
+    // from the home page is still a real page - one bank was wrongly dropped
+    // from an earlier cohort for exactly this reason.
+    let link = await resolveEquivalentPage(homeCapture.snapshot, identity);
+    let foundVia = "navigation";
     if (!link) {
-      outcomes.push({ ...base, reason: "no equivalent page found among real links" });
+      const origin = new URL(homeCapture.finalUrl ?? home).origin;
+      link = await resolveEquivalentFromSitemap(origin, identity);
+      foundVia = "sitemap";
+    }
+    if (!link) {
+      outcomes.push({
+        ...base,
+        reason: "no equivalent page found in navigation or sitemap",
+      });
       continue;
     }
 
@@ -187,7 +200,7 @@ export async function buildPeerCohort(options: {
     outcomes.push({
       ...base,
       accepted: true,
-      reason: "accepted",
+      reason: `accepted (via ${foundVia})`,
       benchmarkId: run.benchmarkId,
     });
     acceptedBenchmarks.push({
