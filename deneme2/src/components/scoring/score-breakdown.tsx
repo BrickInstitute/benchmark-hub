@@ -15,10 +15,10 @@ interface ScoreBreakdownProps {
 }
 
 function getBarColor(value: number): string {
-  if (value >= 8) return "bg-green-500";
-  if (value >= 6) return "bg-blue-500";
-  if (value >= 4) return "bg-yellow-500";
-  return "bg-red-500";
+  if (value >= 8) return "bg-mint";
+  if (value >= 6) return "bg-sky";
+  if (value >= 4) return "bg-amber";
+  return "bg-rose";
 }
 
 export function ScoreBreakdown({ score }: ScoreBreakdownProps) {
@@ -38,10 +38,10 @@ export function ScoreBreakdown({ score }: ScoreBreakdownProps) {
         return (
           <div key={criteria.key}>
             <div className="flex justify-between text-xs mb-1">
-              <span className="text-gray-600">{criteria.label}</span>
+              <span className="text-ink-2">{criteria.label}</span>
               <span className="font-medium">{formatScore(value)}</span>
             </div>
-            <div className="w-full bg-gray-100 rounded-full h-2">
+            <div className="w-full bg-surface-3 rounded-full h-2">
               <div
                 className={cn("h-2 rounded-full transition-all", getBarColor(value))}
                 style={{ width: `${(value / 10) * 100}%` }}

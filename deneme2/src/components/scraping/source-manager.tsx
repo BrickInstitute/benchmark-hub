@@ -77,7 +77,7 @@ export function SourceManager() {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <h2 className="font-semibold text-gray-900">Scraping Kaynaklari</h2>
+        <h2 className="font-semibold text-ink">Scraping Kaynaklari</h2>
         <div className="flex gap-2">
           <Button
             variant="primary"
@@ -94,20 +94,20 @@ export function SourceManager() {
       </CardHeader>
       <CardContent>
         {showForm && (
-          <div className="space-y-3 mb-6 p-4 bg-gray-50 rounded-lg">
+          <div className="space-y-3 mb-6 p-4 bg-surface-2 rounded-lg">
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Kaynak adi (orn: Dribbble UI Shots)"
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full px-3 py-2 text-sm border border-line-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
             <input
               type="url"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="URL (orn: https://dribbble.com/shots/popular)"
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full px-3 py-2 text-sm border border-line-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
             <div className="grid grid-cols-3 gap-3">
               <Select
@@ -129,7 +129,7 @@ export function SourceManager() {
                 onChange={(e) => setMaxItems(parseInt(e.target.value) || 20)}
                 min={1}
                 max={200}
-                className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="px-3 py-2 text-sm border border-line-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
                 placeholder="Maks item"
               />
             </div>
@@ -140,7 +140,7 @@ export function SourceManager() {
         )}
 
         {sources.length === 0 ? (
-          <p className="text-sm text-gray-500 text-center py-4">
+          <p className="text-sm text-muted text-center py-4">
             Henuz kaynak eklenmedi. &quot;Kaynak Ekle&quot; ile baslayın.
           </p>
         ) : (
@@ -159,29 +159,29 @@ export function SourceManager() {
             }) => (
               <div
                 key={source.id}
-                className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:bg-gray-50"
+                className="flex items-center justify-between p-3 rounded-lg border border-line hover:bg-surface-2"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${source.enabled ? "bg-green-500" : "bg-gray-300"}`} />
-                    <span className="font-medium text-sm text-gray-900">{source.name}</span>
+                    <span className={`w-2 h-2 rounded-full ${source.enabled ? "bg-mint" : "bg-surface-3"}`} />
+                    <span className="font-medium text-sm text-ink">{source.name}</span>
                     <Badge>{source.site}</Badge>
                     <Badge variant={source.schedule === "daily" ? "info" : source.schedule === "weekly" ? "warning" : "default"}>
                       {source.schedule}
                     </Badge>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1 truncate">{source.url}</p>
+                  <p className="text-xs text-muted mt-1 truncate">{source.url}</p>
                   {source.lastRunAt && (
-                    <p className="text-xs text-gray-400 mt-0.5">
+                    <p className="text-xs text-muted-2 mt-0.5">
                       Son: {formatDate(source.lastRunAt)} -{" "}
-                      <span className={source.lastRunStatus === "success" ? "text-green-500" : "text-red-500"}>
+                      <span className={source.lastRunStatus === "success" ? "text-mint" : "text-rose"}>
                         {source.lastRunStatus}
                       </span>
                     </p>
                   )}
                 </div>
                 <div className="flex items-center gap-2 ml-4">
-                  <span className="text-xs text-gray-400">{source.maxItems} item</span>
+                  <span className="text-xs text-muted-2">{source.maxItems} item</span>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -193,7 +193,7 @@ export function SourceManager() {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleDelete(source.id)}
-                    className="text-red-500 hover:text-red-700"
+                    className="text-rose hover:text-rose"
                   >
                     Sil
                   </Button>

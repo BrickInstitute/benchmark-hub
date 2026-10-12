@@ -79,8 +79,8 @@ export default function ScoringPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">AI Skorlama</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold text-ink">AI Skorlama</h1>
+          <p className="text-sm text-muted mt-1">
             {scored.length} skorlanmis, {unscored.length} bekleyen benchmark
           </p>
         </div>
@@ -101,7 +101,7 @@ export default function ScoringPage() {
       {/* Unscored benchmarks */}
       {unscored.length > 0 && (
         <div className="mb-8">
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
+          <h2 className="text-sm font-semibold text-muted uppercase tracking-wider mb-3">
             Skorlanmamis ({unscored.length})
           </h2>
           <div className="space-y-2">
@@ -116,7 +116,7 @@ export default function ScoringPage() {
             }) => (
               <Card key={benchmark.id}>
                 <CardContent className="flex items-center gap-4 py-3">
-                  <div className="relative w-16 h-12 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                  <div className="relative w-16 h-12 bg-surface-3 rounded overflow-hidden flex-shrink-0">
                     <Image
                       src={`/api/files/${benchmark.thumbnailPath || benchmark.imagePath}`}
                       alt={benchmark.title}
@@ -126,13 +126,13 @@ export default function ScoringPage() {
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <Link href={`/benchmarks/${benchmark.id}`} className="font-medium text-sm text-gray-900 hover:text-brand-600 truncate block">
+                    <Link href={`/benchmarks/${benchmark.id}`} className="font-medium text-sm text-ink hover:text-brand-300 truncate block">
                       {benchmark.title}
                     </Link>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-xs text-gray-400">{benchmark.category.name}</span>
+                      <span className="text-xs text-muted-2">{benchmark.category.name}</span>
                       {benchmark.sourceSite && (
-                        <span className="text-xs text-gray-400">- {benchmark.sourceSite}</span>
+                        <span className="text-xs text-muted-2">- {benchmark.sourceSite}</span>
                       )}
                     </div>
                   </div>
@@ -152,14 +152,14 @@ export default function ScoringPage() {
 
       {/* Scored benchmarks */}
       <div>
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
+        <h2 className="text-sm font-semibold text-muted uppercase tracking-wider mb-3">
           Skorlanmis ({scored.length})
         </h2>
         {scored.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
-              <p className="text-gray-500">Henuz skorlanmis benchmark yok.</p>
-              <p className="text-sm text-gray-400 mt-1">
+              <p className="text-muted">Henuz skorlanmis benchmark yok.</p>
+              <p className="text-sm text-muted-2 mt-1">
                 Yukaridaki &quot;Toplu Skorla&quot; butonunu veya tek tek &quot;Skorla&quot; butonlarini kullanin.
               </p>
             </CardContent>
@@ -179,7 +179,7 @@ export default function ScoringPage() {
               <Link key={benchmark.id} href={`/benchmarks/${benchmark.id}`}>
                 <Card className="hover:shadow-md transition-shadow">
                   <CardContent className="flex items-center gap-4 py-3">
-                    <div className="relative w-16 h-12 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                    <div className="relative w-16 h-12 bg-surface-3 rounded overflow-hidden flex-shrink-0">
                       <Image
                         src={`/api/files/${benchmark.thumbnailPath || benchmark.imagePath}`}
                         alt={benchmark.title}
@@ -189,13 +189,13 @@ export default function ScoringPage() {
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-sm text-gray-900 truncate">{benchmark.title}</h3>
+                      <h3 className="font-medium text-sm text-ink truncate">{benchmark.title}</h3>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-xs text-gray-400">{benchmark.category.name}</span>
+                        <span className="text-xs text-muted-2">{benchmark.category.name}</span>
                         {benchmark.sourceSite && (
-                          <span className="text-xs text-gray-400">- {benchmark.sourceSite}</span>
+                          <span className="text-xs text-muted-2">- {benchmark.sourceSite}</span>
                         )}
-                        <span className="text-xs text-gray-300">{formatDate(benchmark.createdAt)}</span>
+                        <span className="text-xs text-muted-2">{formatDate(benchmark.createdAt)}</span>
                       </div>
                     </div>
                     <ScoreBadge score={benchmark.overallScore} size="lg" />

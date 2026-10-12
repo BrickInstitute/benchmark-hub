@@ -15,10 +15,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(
           "inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none",
           {
-            "bg-brand-600 text-white hover:bg-brand-700 focus:ring-brand-500": variant === "primary",
-            "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-brand-500": variant === "secondary",
-            "text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:ring-gray-500": variant === "ghost",
-            "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500": variant === "danger",
+            "bg-brand-400 text-base hover:bg-brand-500 focus:ring-brand-500": variant === "primary",
+            "bg-surface text-ink-2 border border-line-strong hover:bg-surface-2 focus:ring-brand-500": variant === "secondary",
+            "text-ink-2 hover:bg-surface-3 hover:text-ink focus:ring-line-strong": variant === "ghost",
+            "bg-rose text-white hover:bg-rose focus:ring-rose": variant === "danger",
           },
           {
             "px-3 py-1.5 text-xs": size === "sm",

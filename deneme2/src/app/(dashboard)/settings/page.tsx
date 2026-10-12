@@ -45,8 +45,8 @@ export default function SettingsPage() {
   return (
     <div className="max-w-3xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Ayarlar</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-ink">Ayarlar</h1>
+        <p className="text-sm text-muted mt-1">
           Kategori ve etiket yonetimi
         </p>
       </div>
@@ -54,7 +54,7 @@ export default function SettingsPage() {
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <h2 className="font-semibold text-gray-900">Kategoriler</h2>
+            <h2 className="font-semibold text-ink">Kategoriler</h2>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2 mb-4">
@@ -70,7 +70,7 @@ export default function SettingsPage() {
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value)}
                 placeholder="Yeni kategori adi..."
-                className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="flex-1 px-3 py-2 text-sm border border-line-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
                 onKeyDown={(e) => e.key === "Enter" && handleAddCategory()}
               />
               <Button onClick={handleAddCategory} size="sm">
@@ -82,7 +82,7 @@ export default function SettingsPage() {
 
         <Card>
           <CardHeader>
-            <h2 className="font-semibold text-gray-900">Etiketler</h2>
+            <h2 className="font-semibold text-ink">Etiketler</h2>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2 mb-4">
@@ -98,7 +98,7 @@ export default function SettingsPage() {
                 value={newTag}
                 onChange={(e) => setNewTag(e.target.value)}
                 placeholder="Yeni etiket adi..."
-                className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="flex-1 px-3 py-2 text-sm border border-line-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
                 onKeyDown={(e) => e.key === "Enter" && handleAddTag()}
               />
               <Button onClick={handleAddTag} size="sm">

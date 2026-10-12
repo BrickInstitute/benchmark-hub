@@ -46,7 +46,7 @@ export default function BenchmarkDetailPage() {
   if (!benchmark) {
     return (
       <div className="text-center py-20">
-        <p className="text-gray-500">Benchmark bulunamadi.</p>
+        <p className="text-muted">Benchmark bulunamadi.</p>
         <Button variant="secondary" className="mt-4" onClick={() => router.back()}>
           Geri Don
         </Button>
@@ -62,11 +62,11 @@ export default function BenchmarkDetailPage() {
         <div>
           <button
             onClick={() => router.back()}
-            className="text-sm text-gray-500 hover:text-gray-700 mb-2 flex items-center gap-1"
+            className="text-sm text-muted hover:text-ink-2 mb-2 flex items-center gap-1"
           >
             &#8592; Geri
           </button>
-          <h1 className="text-2xl font-bold text-gray-900">{benchmark.title}</h1>
+          <h1 className="text-2xl font-bold text-ink">{benchmark.title}</h1>
           <div className="flex items-center gap-2 mt-2">
             <Badge variant="info">{benchmark.category.name}</Badge>
             {benchmark.sourceSite && (
@@ -75,7 +75,7 @@ export default function BenchmarkDetailPage() {
             {benchmark.isUploaded && (
               <Badge variant="success">Yuklendi</Badge>
             )}
-            <span className="text-sm text-gray-400">
+            <span className="text-sm text-muted-2">
               {formatDate(benchmark.createdAt)}
             </span>
           </div>
@@ -104,7 +104,7 @@ export default function BenchmarkDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <Card>
-            <div className="relative aspect-video bg-gray-100 rounded-t-xl overflow-hidden">
+            <div className="capture-mat relative aspect-video rounded-t-xl overflow-hidden">
               <Image
                 src={`/api/files/${benchmark.imagePath}`}
                 alt={benchmark.title}
@@ -115,7 +115,7 @@ export default function BenchmarkDetailPage() {
             </div>
             {benchmark.description && (
               <CardContent>
-                <p className="text-gray-600">{benchmark.description}</p>
+                <p className="text-ink-2">{benchmark.description}</p>
               </CardContent>
             )}
           </Card>
@@ -126,17 +126,17 @@ export default function BenchmarkDetailPage() {
           {latestScore && (
             <Card>
               <CardHeader>
-                <h2 className="font-semibold text-gray-900">AI Skoru</h2>
+                <h2 className="font-semibold text-ink">AI Skoru</h2>
               </CardHeader>
               <CardContent>
                 <div className="text-center mb-4">
-                  <span className="text-4xl font-bold text-brand-600">
+                  <span className="text-4xl font-bold text-brand-300">
                     {formatScore(latestScore.overallScore)}
                   </span>
-                  <span className="text-gray-400 text-lg">/10</span>
+                  <span className="text-muted-2 text-lg">/10</span>
                 </div>
                 <ScoreBreakdown score={latestScore} />
-                <p className="text-xs text-gray-400 mt-3 text-center">
+                <p className="text-xs text-muted-2 mt-3 text-center">
                   {latestScore.aiModel} - {formatDate(latestScore.createdAt)}
                 </p>
               </CardContent>
@@ -146,17 +146,17 @@ export default function BenchmarkDetailPage() {
           {/* Metadata */}
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-gray-900">Detaylar</h2>
+              <h2 className="font-semibold text-ink">Detaylar</h2>
             </CardHeader>
             <CardContent className="space-y-3">
               {benchmark.sourceUrl && (
                 <div>
-                  <span className="text-xs text-gray-500">Kaynak URL</span>
+                  <span className="text-xs text-muted">Kaynak URL</span>
                   <a
                     href={benchmark.sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block text-sm text-brand-600 hover:underline truncate"
+                    className="block text-sm text-brand-300 hover:underline truncate"
                   >
                     {benchmark.sourceUrl}
                   </a>
@@ -164,24 +164,24 @@ export default function BenchmarkDetailPage() {
               )}
               {benchmark.width && benchmark.height && (
                 <div>
-                  <span className="text-xs text-gray-500">Boyut</span>
+                  <span className="text-xs text-muted">Boyut</span>
                   <p className="text-sm">{benchmark.width} x {benchmark.height}</p>
                 </div>
               )}
               {benchmark.layoutType && (
                 <div>
-                  <span className="text-xs text-gray-500">Layout Tipi</span>
+                  <span className="text-xs text-muted">Layout Tipi</span>
                   <p className="text-sm">{benchmark.layoutType}</p>
                 </div>
               )}
               {benchmark.dominantColors && (
                 <div>
-                  <span className="text-xs text-gray-500">Renkler</span>
+                  <span className="text-xs text-muted">Renkler</span>
                   <div className="flex gap-1 mt-1">
                     {(benchmark.dominantColors as string[]).map((color: string, i: number) => (
                       <div
                         key={i}
-                        className="w-6 h-6 rounded border border-gray-200"
+                        className="w-6 h-6 rounded border border-line"
                         style={{ backgroundColor: color }}
                         title={color}
                       />
@@ -191,7 +191,7 @@ export default function BenchmarkDetailPage() {
               )}
               {benchmark.tags?.length > 0 && (
                 <div>
-                  <span className="text-xs text-gray-500">Etiketler</span>
+                  <span className="text-xs text-muted">Etiketler</span>
                   <div className="flex flex-wrap gap-1 mt-1">
                     {benchmark.tags.map((t: { tag: { id: string; name: string } }) => (
                       <Badge key={t.tag.id}>{t.tag.name}</Badge>
@@ -206,19 +206,19 @@ export default function BenchmarkDetailPage() {
           {latestScore?.feedback && (
             <Card>
               <CardHeader>
-                <h2 className="font-semibold text-gray-900">AI Analizi</h2>
+                <h2 className="font-semibold text-ink">AI Analizi</h2>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600 whitespace-pre-wrap">
+                <p className="text-sm text-ink-2 whitespace-pre-wrap">
                   {latestScore.feedback}
                 </p>
                 {latestScore.strengths && (
                   <div className="mt-4">
-                    <h3 className="text-xs font-semibold text-green-600 uppercase mb-2">Guclu Yonler</h3>
+                    <h3 className="text-xs font-semibold text-mint uppercase mb-2">Guclu Yonler</h3>
                     <ul className="space-y-1">
                       {(latestScore.strengths as string[]).map((s: string, i: number) => (
-                        <li key={i} className="text-sm text-gray-600 flex items-start gap-1">
-                          <span className="text-green-500 mt-0.5">+</span> {s}
+                        <li key={i} className="text-sm text-ink-2 flex items-start gap-1">
+                          <span className="text-mint mt-0.5">+</span> {s}
                         </li>
                       ))}
                     </ul>
@@ -226,11 +226,11 @@ export default function BenchmarkDetailPage() {
                 )}
                 {latestScore.improvements && (
                   <div className="mt-4">
-                    <h3 className="text-xs font-semibold text-orange-600 uppercase mb-2">Gelistirme Alanlari</h3>
+                    <h3 className="text-xs font-semibold text-peach uppercase mb-2">Gelistirme Alanlari</h3>
                     <ul className="space-y-1">
                       {(latestScore.improvements as string[]).map((s: string, i: number) => (
-                        <li key={i} className="text-sm text-gray-600 flex items-start gap-1">
-                          <span className="text-orange-500 mt-0.5">!</span> {s}
+                        <li key={i} className="text-sm text-ink-2 flex items-start gap-1">
+                          <span className="text-peach mt-0.5">!</span> {s}
                         </li>
                       ))}
                     </ul>
@@ -244,13 +244,13 @@ export default function BenchmarkDetailPage() {
           {benchmark.scores?.length > 1 && (
             <Card>
               <CardHeader>
-                <h2 className="font-semibold text-gray-900">Skor Gecmisi</h2>
+                <h2 className="font-semibold text-ink">Skor Gecmisi</h2>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   {benchmark.scores.map((score: { id: string; overallScore: number; aiModel: string; createdAt: string }, i: number) => (
                     <div key={score.id} className="flex items-center justify-between text-sm">
-                      <span className="text-gray-500">
+                      <span className="text-muted">
                         {i === 0 ? "Son" : `#${benchmark.scores.length - i}`} - {formatDate(score.createdAt)}
                       </span>
                       <span className="font-medium">{formatScore(score.overallScore)}/10</span>

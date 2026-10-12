@@ -102,22 +102,22 @@ function ImageUploadZone({
       className={cn(
         "border-2 border-dashed rounded-xl cursor-pointer transition-colors overflow-hidden",
         isDragActive
-          ? "border-brand-500 bg-brand-50"
-          : "border-gray-300 hover:border-brand-400 hover:bg-gray-50"
+          ? "border-brand-500 bg-surface-3"
+          : "border-line-strong hover:border-brand-400 hover:bg-surface-2"
       )}
     >
       <input {...getInputProps()} />
       {preview ? (
         <div className="relative aspect-video">
-          <img src={preview} alt="Preview" className="w-full h-full object-contain bg-gray-50" />
+          <img src={preview} alt="Preview" className="w-full h-full object-contain bg-surface-2" />
           {isUploading && (
-            <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
+            <div className="absolute inset-0 bg-surface/70 flex items-center justify-center">
               <div className="w-6 h-6 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
             </div>
           )}
         </div>
       ) : (
-        <div className="aspect-video flex flex-col items-center justify-center text-gray-400 p-4">
+        <div className="aspect-video flex flex-col items-center justify-center text-muted-2 p-4">
           <svg className="w-10 h-10 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
@@ -141,27 +141,27 @@ function ScoreBar({ label, leftVal, rightVal }: { label: string; leftVal: number
   const rightWins = rightVal > leftVal;
   return (
     <div className="flex items-center gap-2 text-xs">
-      <span className={cn("w-6 text-right font-bold", leftWins ? "text-green-600" : "text-gray-600")}>
+      <span className={cn("w-6 text-right font-bold", leftWins ? "text-mint" : "text-ink-2")}>
         {formatScore(leftVal)}
       </span>
-      <div className="flex-1 flex h-3 rounded-full overflow-hidden bg-gray-100 gap-0.5">
+      <div className="flex-1 flex h-3 rounded-full overflow-hidden bg-surface-3 gap-0.5">
         <div className="flex-1 flex justify-end">
           <div
-            className={cn("h-full rounded-l-full", leftWins ? "bg-green-500" : "bg-gray-300")}
+            className={cn("h-full rounded-l-full", leftWins ? "bg-mint" : "bg-surface-3")}
             style={{ width: `${(leftVal / 10) * 100}%` }}
           />
         </div>
         <div className="flex-1">
           <div
-            className={cn("h-full rounded-r-full", rightWins ? "bg-green-500" : "bg-gray-300")}
+            className={cn("h-full rounded-r-full", rightWins ? "bg-mint" : "bg-surface-3")}
             style={{ width: `${(rightVal / 10) * 100}%` }}
           />
         </div>
       </div>
-      <span className={cn("w-6 font-bold", rightWins ? "text-green-600" : "text-gray-600")}>
+      <span className={cn("w-6 font-bold", rightWins ? "text-mint" : "text-ink-2")}>
         {formatScore(rightVal)}
       </span>
-      <span className="w-28 text-gray-500 truncate">{label}</span>
+      <span className="w-28 text-muted truncate">{label}</span>
     </div>
   );
 }
@@ -279,12 +279,12 @@ export default function ComparePage() {
   ) => (
     <div className="space-y-3">
       {/* Source tabs */}
-      <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+      <div className="flex gap-1 bg-surface-3 p-1 rounded-lg">
         <button
           onClick={() => { setSource("db"); setResult(null); }}
           className={cn(
             "flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors",
-            source === "db" ? "bg-white shadow text-gray-900" : "text-gray-500 hover:text-gray-700"
+            source === "db" ? "bg-surface shadow text-ink" : "text-muted hover:text-ink-2"
           )}
         >
           Mevcut Benchmark
@@ -293,7 +293,7 @@ export default function ComparePage() {
           onClick={() => { setSource("upload"); setResult(null); }}
           className={cn(
             "flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors",
-            source === "upload" ? "bg-white shadow text-gray-900" : "text-gray-500 hover:text-gray-700"
+            source === "upload" ? "bg-surface shadow text-ink" : "text-muted hover:text-ink-2"
           )}
         >
           Gorsel Yukle
@@ -310,7 +310,7 @@ export default function ComparePage() {
           />
           {dbData ? (
             <Card>
-              <div className="relative aspect-video bg-gray-100 rounded-t-xl overflow-hidden">
+              <div className="capture-mat relative aspect-video rounded-t-xl overflow-hidden">
                 <Image
                   src={`/api/files/${dbData.imagePath}`}
                   alt={dbData.title}
@@ -320,17 +320,17 @@ export default function ComparePage() {
                 />
               </div>
               <CardContent>
-                <h3 className="font-medium text-gray-900 text-sm truncate">{dbData.title}</h3>
-                <p className="text-xs text-gray-500 mt-0.5">
+                <h3 className="font-medium text-ink text-sm truncate">{dbData.title}</h3>
+                <p className="text-xs text-muted mt-0.5">
                   {dbData.category?.name}
                   {dbData.overallScore != null && ` - Skor: ${formatScore(dbData.overallScore)}`}
                 </p>
               </CardContent>
             </Card>
           ) : selectedId ? (
-            <div className="aspect-video bg-gray-50 rounded-xl animate-pulse" />
+            <div className="aspect-video bg-surface-2 rounded-xl animate-pulse" />
           ) : (
-            <div className="aspect-video border-2 border-dashed rounded-xl flex items-center justify-center text-gray-400 text-sm">
+            <div className="aspect-video border-2 border-dashed rounded-xl flex items-center justify-center text-muted-2 text-sm">
               {side === "left" ? "Sol" : "Sag"} tarafi secin
             </div>
           )}
@@ -344,8 +344,8 @@ export default function ComparePage() {
   return (
     <div className="max-w-6xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Karsilastir</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-ink">Karsilastir</h1>
+        <p className="text-sm text-muted mt-1">
           Iki tasarimi yan yana karsilastirin - mevcut benchmark veya kendi gorselinizi yukleyin
         </p>
       </div>
@@ -353,11 +353,11 @@ export default function ComparePage() {
       {/* Side-by-side selection */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div>
-          <h2 className="text-sm font-semibold text-gray-700 mb-2">Sol Tasarim</h2>
+          <h2 className="text-sm font-semibold text-ink-2 mb-2">Sol Tasarim</h2>
           {renderSideSelector("left", leftSource, setLeftSource, leftId, setLeftId, leftUpload, leftPreview, handleLeftUpload, left)}
         </div>
         <div>
-          <h2 className="text-sm font-semibold text-gray-700 mb-2">Sag Tasarim</h2>
+          <h2 className="text-sm font-semibold text-ink-2 mb-2">Sag Tasarim</h2>
           {renderSideSelector("right", rightSource, setRightSource, rightId, setRightId, rightUpload, rightPreview, handleRightUpload, right)}
         </div>
       </div>
@@ -380,7 +380,7 @@ export default function ComparePage() {
           )}
         </Button>
         {compareError && (
-          <p className="text-sm text-red-600 mt-2">{compareError}</p>
+          <p className="text-sm text-rose mt-2">{compareError}</p>
         )}
       </div>
 
@@ -391,20 +391,20 @@ export default function ComparePage() {
           <div className={cn(
             "p-5 rounded-xl text-center",
             result.winner === "tie"
-              ? "bg-gray-100"
+              ? "bg-surface-3"
               : "bg-gradient-to-r from-brand-50 to-brand-100"
           )}>
             {result.winner === "tie" ? (
-              <p className="font-bold text-lg text-gray-700">
+              <p className="font-bold text-lg text-ink-2">
                 Berabere! Her iki tasarim da {formatScore(result.left.overallScore)} puan aldi.
               </p>
             ) : (
               <div>
-                <p className="text-sm text-brand-600 font-medium mb-1">Kazanan</p>
-                <p className="font-bold text-xl text-brand-700">
+                <p className="text-sm text-brand-300 font-medium mb-1">Kazanan</p>
+                <p className="font-bold text-xl text-brand-300">
                   {result.winner === "left" ? "Sol Tasarim" : "Sag Tasarim"}
                 </p>
-                <p className="text-brand-600 mt-1">
+                <p className="text-brand-300 mt-1">
                   {formatScore(result.left.overallScore)} vs {formatScore(result.right.overallScore)}
                 </p>
               </div>
@@ -415,8 +415,8 @@ export default function ComparePage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <h2 className="font-semibold text-gray-900">Kriter Bazli Karsilastirma</h2>
-                <div className="flex items-center gap-4 text-xs text-gray-500">
+                <h2 className="font-semibold text-ink">Kriter Bazli Karsilastirma</h2>
+                <div className="flex items-center gap-4 text-xs text-muted">
                   <span className="flex items-center gap-1">
                     <span className="w-3 h-3 rounded-full bg-brand-200" /> Sol
                   </span>
@@ -457,12 +457,12 @@ export default function ComparePage() {
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <h2 className="font-semibold text-gray-900">Sol Tasarim</h2>
+                  <h2 className="font-semibold text-ink">Sol Tasarim</h2>
                   <span className={cn(
                     "text-lg font-bold px-3 py-1 rounded-lg",
-                    result.left.overallScore >= 7 ? "bg-green-100 text-green-700" :
-                    result.left.overallScore >= 5 ? "bg-blue-100 text-blue-700" :
-                    "bg-yellow-100 text-yellow-700"
+                    result.left.overallScore >= 7 ? "bg-mint-dim text-mint" :
+                    result.left.overallScore >= 5 ? "bg-sky-dim text-sky" :
+                    "bg-amber-dim text-amber"
                   )}>
                     {formatScore(result.left.overallScore)}/10
                   </span>
@@ -471,11 +471,11 @@ export default function ComparePage() {
               <CardContent className="space-y-4">
                 {result.leftStrengths?.length > 0 && (
                   <div>
-                    <h3 className="text-xs font-semibold text-green-600 uppercase mb-2">Guclu Yonler</h3>
+                    <h3 className="text-xs font-semibold text-mint uppercase mb-2">Guclu Yonler</h3>
                     <ul className="space-y-1.5">
                       {result.leftStrengths.map((s, i) => (
-                        <li key={i} className="text-sm text-gray-600 flex items-start gap-1.5">
-                          <span className="text-green-500 mt-0.5 shrink-0">+</span> {s}
+                        <li key={i} className="text-sm text-ink-2 flex items-start gap-1.5">
+                          <span className="text-mint mt-0.5 shrink-0">+</span> {s}
                         </li>
                       ))}
                     </ul>
@@ -483,11 +483,11 @@ export default function ComparePage() {
                 )}
                 {result.leftWeaknesses?.length > 0 && (
                   <div>
-                    <h3 className="text-xs font-semibold text-orange-600 uppercase mb-2">Zayif Yonler</h3>
+                    <h3 className="text-xs font-semibold text-peach uppercase mb-2">Zayif Yonler</h3>
                     <ul className="space-y-1.5">
                       {result.leftWeaknesses.map((s, i) => (
-                        <li key={i} className="text-sm text-gray-600 flex items-start gap-1.5">
-                          <span className="text-orange-500 mt-0.5 shrink-0">!</span> {s}
+                        <li key={i} className="text-sm text-ink-2 flex items-start gap-1.5">
+                          <span className="text-peach mt-0.5 shrink-0">!</span> {s}
                         </li>
                       ))}
                     </ul>
@@ -500,12 +500,12 @@ export default function ComparePage() {
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <h2 className="font-semibold text-gray-900">Sag Tasarim</h2>
+                  <h2 className="font-semibold text-ink">Sag Tasarim</h2>
                   <span className={cn(
                     "text-lg font-bold px-3 py-1 rounded-lg",
-                    result.right.overallScore >= 7 ? "bg-green-100 text-green-700" :
-                    result.right.overallScore >= 5 ? "bg-blue-100 text-blue-700" :
-                    "bg-yellow-100 text-yellow-700"
+                    result.right.overallScore >= 7 ? "bg-mint-dim text-mint" :
+                    result.right.overallScore >= 5 ? "bg-sky-dim text-sky" :
+                    "bg-amber-dim text-amber"
                   )}>
                     {formatScore(result.right.overallScore)}/10
                   </span>
@@ -514,11 +514,11 @@ export default function ComparePage() {
               <CardContent className="space-y-4">
                 {result.rightStrengths?.length > 0 && (
                   <div>
-                    <h3 className="text-xs font-semibold text-green-600 uppercase mb-2">Guclu Yonler</h3>
+                    <h3 className="text-xs font-semibold text-mint uppercase mb-2">Guclu Yonler</h3>
                     <ul className="space-y-1.5">
                       {result.rightStrengths.map((s, i) => (
-                        <li key={i} className="text-sm text-gray-600 flex items-start gap-1.5">
-                          <span className="text-green-500 mt-0.5 shrink-0">+</span> {s}
+                        <li key={i} className="text-sm text-ink-2 flex items-start gap-1.5">
+                          <span className="text-mint mt-0.5 shrink-0">+</span> {s}
                         </li>
                       ))}
                     </ul>
@@ -526,11 +526,11 @@ export default function ComparePage() {
                 )}
                 {result.rightWeaknesses?.length > 0 && (
                   <div>
-                    <h3 className="text-xs font-semibold text-orange-600 uppercase mb-2">Zayif Yonler</h3>
+                    <h3 className="text-xs font-semibold text-peach uppercase mb-2">Zayif Yonler</h3>
                     <ul className="space-y-1.5">
                       {result.rightWeaknesses.map((s, i) => (
-                        <li key={i} className="text-sm text-gray-600 flex items-start gap-1.5">
-                          <span className="text-orange-500 mt-0.5 shrink-0">!</span> {s}
+                        <li key={i} className="text-sm text-ink-2 flex items-start gap-1.5">
+                          <span className="text-peach mt-0.5 shrink-0">!</span> {s}
                         </li>
                       ))}
                     </ul>
@@ -543,15 +543,15 @@ export default function ComparePage() {
           {/* Detailed comparison text */}
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-gray-900">Detayli AI Analizi</h2>
+              <h2 className="font-semibold text-ink">Detayli AI Analizi</h2>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+              <p className="text-sm text-ink-2 whitespace-pre-wrap leading-relaxed">
                 {result.comparison}
               </p>
               {result.recommendation && (
-                <div className="mt-4 p-3 bg-brand-50 rounded-lg border border-brand-200">
-                  <h3 className="text-xs font-semibold text-brand-700 uppercase mb-1">Oneri</h3>
+                <div className="mt-4 p-3 bg-surface-3 rounded-lg border border-brand-200">
+                  <h3 className="text-xs font-semibold text-brand-300 uppercase mb-1">Oneri</h3>
                   <p className="text-sm text-brand-800">{result.recommendation}</p>
                 </div>
               )}
@@ -562,7 +562,7 @@ export default function ComparePage() {
 
       {/* Empty state */}
       {!result && !leftReady && !rightReady && (
-        <div className="text-center py-16 text-gray-400">
+        <div className="text-center py-16 text-muted-2">
           <svg className="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
           </svg>

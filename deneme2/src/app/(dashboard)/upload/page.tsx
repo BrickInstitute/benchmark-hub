@@ -110,8 +110,8 @@ export default function UploadPage() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Benchmark Yukle</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-ink">Benchmark Yukle</h1>
+        <p className="text-sm text-muted mt-1">
           Dosyadan yukleyin veya URL&apos;den screenshot alin
         </p>
       </div>
@@ -122,8 +122,8 @@ export default function UploadPage() {
           onClick={() => { setMode("file"); setUploadData(null); }}
           className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
             mode === "file"
-              ? "bg-brand-600 text-white"
-              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              ? "bg-brand-400 text-base"
+              : "bg-surface-3 text-ink-2 hover:bg-surface-3"
           }`}
         >
           Dosyadan Yukle
@@ -132,8 +132,8 @@ export default function UploadPage() {
           onClick={() => { setMode("url"); setUploadData(null); }}
           className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
             mode === "url"
-              ? "bg-brand-600 text-white"
-              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              ? "bg-brand-400 text-base"
+              : "bg-surface-3 text-ink-2 hover:bg-surface-3"
           }`}
         >
           URL&apos;den Screenshot
@@ -146,7 +146,7 @@ export default function UploadPage() {
             <UploadDropzone onUploadComplete={setUploadData} />
           ) : (
             <div className="space-y-3">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-ink-2">
                 Website URL
               </label>
               <div className="flex gap-2">
@@ -155,7 +155,7 @@ export default function UploadPage() {
                   value={screenshotUrl}
                   onChange={(e) => setScreenshotUrl(e.target.value)}
                   placeholder="https://example.com"
-                  className="flex-1 px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="flex-1 px-4 py-2 text-sm bg-surface border border-line-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
                 <Button
                   onClick={handleCaptureUrl}
@@ -165,10 +165,10 @@ export default function UploadPage() {
                 </Button>
               </div>
               {captureError && (
-                <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{captureError}</p>
+                <p className="text-sm text-rose bg-rose-dim px-3 py-2 rounded-lg">{captureError}</p>
               )}
               {uploadData && (
-                <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                <div className="relative aspect-video bg-surface-3 rounded-lg overflow-hidden">
                   <Image
                     src={`/api/files/${uploadData.imagePath}`}
                     alt="Screenshot"
@@ -184,7 +184,7 @@ export default function UploadPage() {
           {uploadData && (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-ink-2 mb-1">
                   Baslik *
                 </label>
                 <input
@@ -192,12 +192,12 @@ export default function UploadPage() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Benchmark basligi..."
-                  className="w-full px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full px-4 py-2 text-sm bg-surface border border-line-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-ink-2 mb-1">
                   Aciklama
                 </label>
                 <textarea
@@ -205,12 +205,12 @@ export default function UploadPage() {
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Opsiyonel aciklama..."
                   rows={3}
-                  className="w-full px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full px-4 py-2 text-sm bg-surface border border-line-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-ink-2 mb-1">
                   Kategori *
                 </label>
                 <Select
@@ -230,14 +230,14 @@ export default function UploadPage() {
                   id="autoScore"
                   checked={autoScore}
                   onChange={(e) => setAutoScore(e.target.checked)}
-                  className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                  className="rounded border-line-strong text-brand-300 focus:ring-brand-500"
                 />
-                <label htmlFor="autoScore" className="text-sm text-gray-700">
+                <label htmlFor="autoScore" className="text-sm text-ink-2">
                   Kaydettikten sonra otomatik AI skorlamasi yap
                 </label>
               </div>
 
-              <div className="flex items-center gap-2 text-xs text-gray-500">
+              <div className="flex items-center gap-2 text-xs text-muted">
                 <span>{uploadData.width}x{uploadData.height}</span>
                 <span>-</span>
                 <span>{(uploadData.fileSize / 1024).toFixed(0)} KB</span>
@@ -247,7 +247,7 @@ export default function UploadPage() {
                   {uploadData.dominantColors.slice(0, 4).map((c, i) => (
                     <div
                       key={i}
-                      className="w-4 h-4 rounded border border-gray-200"
+                      className="w-4 h-4 rounded border border-line"
                       style={{ backgroundColor: c }}
                     />
                   ))}

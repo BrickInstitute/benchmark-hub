@@ -22,19 +22,19 @@ interface Category {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  "landing-pages": "from-blue-500 to-blue-600",
-  "mobile-screens": "from-purple-500 to-purple-600",
-  dashboards: "from-green-500 to-green-600",
-  "e-commerce": "from-orange-500 to-orange-600",
-  saas: "from-cyan-500 to-cyan-600",
-  portfolio: "from-pink-500 to-pink-600",
-  blog: "from-yellow-500 to-yellow-600",
-  components: "from-indigo-500 to-indigo-600",
-  "web-design": "from-teal-500 to-teal-600",
-  "ui-components": "from-violet-500 to-violet-600",
-  "mobile-app": "from-rose-500 to-rose-600",
-  dashboard: "from-emerald-500 to-emerald-600",
-  "landing-page": "from-sky-500 to-sky-600",
+  "landing-pages": "bg-sky-dim text-sky",
+  "mobile-screens": "bg-lavender-dim text-lavender",
+  dashboards: "bg-mint-dim text-mint",
+  "e-commerce": "bg-peach-dim text-peach",
+  saas: "bg-sky-dim text-sky",
+  portfolio: "bg-rose-dim text-rose",
+  blog: "bg-amber-dim text-amber",
+  components: "bg-lavender-dim text-lavender",
+  "web-design": "bg-mint-dim text-mint",
+  "ui-components": "bg-lavender-dim text-lavender",
+  "mobile-app": "bg-rose-dim text-rose",
+  dashboard: "bg-mint-dim text-mint",
+  "landing-page": "bg-surface-3 text-ink-2",
 };
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -67,8 +67,8 @@ function CategoryFolders() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Benchmarks</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold text-ink">Benchmarks</h1>
+          <p className="text-sm text-muted mt-1">
             {categories.length} kategori, toplam {totalBenchmarks} benchmark
           </p>
         </div>
@@ -84,16 +84,16 @@ function CategoryFolders() {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {categories.map((cat) => {
-          const gradient = CATEGORY_COLORS[cat.slug] || "from-gray-500 to-gray-600";
+          const gradient = CATEGORY_COLORS[cat.slug] || "bg-surface-3 text-ink-2";
           const iconPath = CATEGORY_ICONS[cat.slug];
 
           return (
             <Link
               key={cat.id}
               href={`/benchmarks?category=${cat.slug}`}
-              className="group relative overflow-hidden rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200"
+              className="group relative overflow-hidden rounded-xl border border-line hover:border-line-strong hover:shadow-lg transition-all duration-200"
             >
-              <div className={`h-24 bg-gradient-to-br ${gradient} flex items-center justify-center`}>
+              <div className={`h-24 ${gradient} flex items-center justify-center`}>
                 {iconPath ? (
                   <svg
                     className="w-10 h-10 text-white/80 group-hover:text-white group-hover:scale-110 transition-all"
@@ -114,9 +114,9 @@ function CategoryFolders() {
                   </svg>
                 )}
               </div>
-              <div className="p-3 bg-white">
-                <h3 className="font-semibold text-sm text-gray-900 truncate">{cat.name}</h3>
-                <p className="text-xs text-gray-500 mt-0.5">{cat._count.benchmarks} benchmark</p>
+              <div className="p-3 bg-surface">
+                <h3 className="font-semibold text-sm text-ink truncate">{cat.name}</h3>
+                <p className="text-xs text-muted mt-0.5">{cat._count.benchmarks} benchmark</p>
               </div>
             </Link>
           );
@@ -154,17 +154,17 @@ function CategoryView() {
         <div className="flex items-center gap-3">
           <Link
             href="/benchmarks"
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-muted-2 hover:text-ink-2 transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-ink">
               {isAllView ? "Tum Benchmarklar" : categorySlug}
             </h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-muted mt-1">
               {total} benchmark
             </p>
           </div>
@@ -227,7 +227,7 @@ function CategoryView() {
             Sonraki
           </Button>
 
-          <span className="text-xs text-gray-500 ml-2">
+          <span className="text-xs text-muted ml-2">
             {currentPage}/{totalPages}
           </span>
         </div>

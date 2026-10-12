@@ -1,41 +1,104 @@
 @import "tailwindcss";
 
+/*
+ * Dark pastel theme.
+ *
+ * The screenshots are the subject of this product, so the interface stays
+ * quiet: a desaturated slate-violet ground lets a captured page sit on the
+ * canvas without the chrome competing with it. Accents are pastel but muted -
+ * on a dark ground a saturated pastel vibrates and makes small text hard to
+ * read.
+ *
+ * Status colours are deliberately NOT a traffic light. This product reports
+ * how common something is, not whether it is good, so "present" must not look
+ * like a pass and "absent" must not look like a failure. Red is kept for things
+ * that genuinely went wrong (a failed capture), and "unknown" gets its own
+ * distinct colour because confusing it with "absent" is the single most
+ * damaging misreading a user can make.
+ */
 @theme {
-  --color-brand-50: #f0f4ff;
-  --color-brand-100: #dbe4ff;
-  --color-brand-200: #bac8ff;
-  --color-brand-300: #91a7ff;
-  --color-brand-400: #748ffc;
-  --color-brand-500: #4c6ef5;
-  --color-brand-600: #3b5bdb;
-  --color-brand-700: #364fc7;
-  --color-brand-800: #2b3fa0;
-  --color-brand-900: #1b2559;
+  /* Surfaces, darkest first */
+  --color-base: #14141c;
+  --color-surface: #1c1c26;
+  --color-surface-2: #232330;
+  --color-surface-3: #2c2c3b;
+  --color-line: #343446;
+  --color-line-strong: #43435a;
+
+  /* Text */
+  --color-ink: #e9e7f2;
+  --color-ink-2: #b9b6cc;
+  --color-muted: #8a87a0;
+  --color-muted-2: #66647c;
+
+  /* Pastel accents */
+  --color-brand-50: #eef0fe;
+  --color-brand-100: #dcdffc;
+  --color-brand-200: #c3c8f9;
+  --color-brand-300: #a9b1f6;
+  --color-brand-400: #9aa8f5;
+  --color-brand-500: #8491ee;
+  --color-brand-600: #6e7ae4;
+  --color-brand-700: #5a64c8;
+  --color-brand-800: #474f9e;
+  --color-brand-900: #343a74;
+
+  --color-mint: #8ed7b5;
+  --color-mint-dim: #2a4439;
+  --color-peach: #f0b48a;
+  --color-peach-dim: #4a3628;
+  --color-rose: #ef9fb4;
+  --color-rose-dim: #472a33;
+  --color-lavender: #bba6f0;
+  --color-lavender-dim: #3a3050;
+  --color-sky: #8fc3ee;
+  --color-sky-dim: #27394a;
+  --color-amber: #e8c879;
+  --color-amber-dim: #453c25;
 }
 
 @layer base {
   * {
-    border-color: var(--color-gray-200);
+    border-color: var(--color-line);
+  }
+  html {
+    color-scheme: dark;
   }
   body {
-    background-color: var(--color-gray-50);
-    color: var(--color-gray-900);
+    background-color: var(--color-base);
+    color: var(--color-ink);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  /* Form controls do not inherit colour reliably across browsers. */
+  input,
+  textarea,
+  select {
+    background-color: var(--color-surface-2);
+    color: var(--color-ink);
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-muted-2);
+  }
+  /* A captured page is a light document. It sits on a light mat so it reads as
+     an artefact being examined rather than as part of the interface. */
+  .capture-mat {
+    background-color: #f4f4f7;
+  }
 }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
+  background: var(--color-surface-3);
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--color-line-strong);
 }

@@ -56,7 +56,7 @@ export function BenchmarkFilters() {
           placeholder="Benchmark ara..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); setIsUserTyping(true); }}
-          className="w-full px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="w-full px-4 py-2 text-sm bg-surface border border-line-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
       </div>
 

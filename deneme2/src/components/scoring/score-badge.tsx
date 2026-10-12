@@ -10,12 +10,12 @@ interface ScoreBadgeProps {
 export function ScoreBadge({ score, size = "md" }: ScoreBadgeProps) {
   const color =
     score >= 8
-      ? "bg-green-100 text-green-700 border-green-200"
+      ? "bg-mint-dim text-mint border-mint-dim"
       : score >= 6
-      ? "bg-blue-100 text-blue-700 border-blue-200"
+      ? "bg-sky-dim text-sky border-sky-dim"
       : score >= 4
-      ? "bg-yellow-100 text-yellow-700 border-yellow-200"
-      : "bg-red-100 text-red-700 border-red-200";
+      ? "bg-amber-dim text-amber border-amber-dim"
+      : "bg-rose-dim text-rose border-rose-dim";
 
   return (
     <span

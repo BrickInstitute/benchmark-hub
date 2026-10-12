@@ -32,7 +32,7 @@ export function ScrapingForm({ onJobStarted }: ScrapingFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-ink-2 mb-1">
           Hedef URL
         </label>
         <input
@@ -40,14 +40,14 @@ export function ScrapingForm({ onJobStarted }: ScrapingFormProps) {
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://mobbin.com/browse/ios/apps"
-          className="w-full px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="w-full px-4 py-2 text-sm bg-surface border border-line-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
           required
         />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-ink-2 mb-1">
             Site Tipi
           </label>
           <Select
@@ -58,7 +58,7 @@ export function ScrapingForm({ onJobStarted }: ScrapingFormProps) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-ink-2 mb-1">
             Maks. Item
           </label>
           <input
@@ -67,13 +67,13 @@ export function ScrapingForm({ onJobStarted }: ScrapingFormProps) {
             onChange={(e) => setMaxItems(parseInt(e.target.value) || 20)}
             min={1}
             max={200}
-            className="w-full px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full px-4 py-2 text-sm bg-surface border border-line-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
       </div>
 
       {error && (
-        <div className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+        <div className="text-sm text-rose bg-rose-dim px-3 py-2 rounded-lg">
           {error}
         </div>
       )}

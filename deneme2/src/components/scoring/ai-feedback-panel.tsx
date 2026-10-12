@@ -12,20 +12,20 @@ export function AIFeedbackPanel({ feedback, strengths, improvements }: AIFeedbac
   return (
     <Card>
       <CardHeader>
-        <h3 className="font-semibold text-gray-900">AI Analizi</h3>
+        <h3 className="font-semibold text-ink">AI Analizi</h3>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-sm text-gray-600 whitespace-pre-wrap">{feedback}</p>
+        <p className="text-sm text-ink-2 whitespace-pre-wrap">{feedback}</p>
 
         {strengths && strengths.length > 0 && (
           <div>
-            <h4 className="text-xs font-semibold text-green-600 uppercase tracking-wider mb-2">
+            <h4 className="text-xs font-semibold text-mint uppercase tracking-wider mb-2">
               Guclu Yonler
             </h4>
             <ul className="space-y-1">
               {strengths.map((item, i) => (
-                <li key={i} className="text-sm text-gray-600 flex items-start gap-2">
-                  <span className="text-green-500 font-bold mt-0.5">+</span>
+                <li key={i} className="text-sm text-ink-2 flex items-start gap-2">
+                  <span className="text-mint font-bold mt-0.5">+</span>
                   {item}
                 </li>
               ))}
@@ -35,13 +35,13 @@ export function AIFeedbackPanel({ feedback, strengths, improvements }: AIFeedbac
 
         {improvements && improvements.length > 0 && (
           <div>
-            <h4 className="text-xs font-semibold text-orange-600 uppercase tracking-wider mb-2">
+            <h4 className="text-xs font-semibold text-peach uppercase tracking-wider mb-2">
               Gelistirme Alanlari
             </h4>
             <ul className="space-y-1">
               {improvements.map((item, i) => (
-                <li key={i} className="text-sm text-gray-600 flex items-start gap-2">
-                  <span className="text-orange-500 font-bold mt-0.5">!</span>
+                <li key={i} className="text-sm text-ink-2 flex items-start gap-2">
+                  <span className="text-peach font-bold mt-0.5">!</span>
                   {item}
                 </li>
               ))}

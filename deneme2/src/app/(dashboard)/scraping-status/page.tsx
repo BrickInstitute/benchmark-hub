@@ -66,8 +66,8 @@ export default function ScrapingStatusPage() {
     return (
       <div className="max-w-5xl mx-auto space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Scraping Durumu</h1>
-          <p className="text-sm text-gray-500 mt-1">Sistem durumu ve istatistikler</p>
+          <h1 className="text-2xl font-bold text-ink">Scraping Durumu</h1>
+          <p className="text-sm text-muted mt-1">Sistem durumu ve istatistikler</p>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -83,7 +83,7 @@ export default function ScrapingStatusPage() {
   if (!stats) {
     return (
       <div className="max-w-5xl mx-auto">
-        <p className="text-sm text-gray-500 text-center py-8">Veriler yuklenemedi.</p>
+        <p className="text-sm text-muted text-center py-8">Veriler yuklenemedi.</p>
       </div>
     );
   }
@@ -97,10 +97,10 @@ export default function ScrapingStatusPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Scraping Durumu</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-ink">Scraping Durumu</h1>
+        <p className="text-sm text-muted mt-1">
           Sistem durumu ve istatistikler
-          <span className="ml-2 text-xs text-gray-400">(10s auto-refresh)</span>
+          <span className="ml-2 text-xs text-muted-2">(10s auto-refresh)</span>
         </p>
       </div>
 
@@ -123,7 +123,7 @@ export default function ScrapingStatusPage() {
       {/* System Status */}
       <Card>
         <CardHeader>
-          <h2 className="font-semibold text-gray-900">Sistem Durumu</h2>
+          <h2 className="font-semibold text-ink">Sistem Durumu</h2>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-6 text-sm">
@@ -131,10 +131,10 @@ export default function ScrapingStatusPage() {
               <span
                 className={cn(
                   "w-2.5 h-2.5 rounded-full",
-                  hasActiveWork ? "bg-green-500 animate-pulse" : "bg-gray-300"
+                  hasActiveWork ? "bg-mint animate-pulse" : "bg-surface-3"
                 )}
               />
-              <span className="text-gray-700">
+              <span className="text-ink-2">
                 {summary.runningJobs > 0
                   ? `${summary.runningJobs} job calisiyor`
                   : summary.pendingJobs > 0
@@ -143,12 +143,12 @@ export default function ScrapingStatusPage() {
               </span>
             </div>
             {closestScrape && (
-              <div className="text-gray-600">
+              <div className="text-ink-2">
                 Sonraki scraping:{" "}
-                <span className="font-medium text-gray-900">
+                <span className="font-medium text-ink">
                   {closestScrape.sourceName}
                 </span>{" "}
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-muted-2">
                   ({formatRelativeTime(closestScrape.nextRunAt)})
                 </span>
               </div>
@@ -160,7 +160,7 @@ export default function ScrapingStatusPage() {
       {/* 7-Day Chart */}
       <Card>
         <CardHeader>
-          <h2 className="font-semibold text-gray-900">Son 7 Gun</h2>
+          <h2 className="font-semibold text-ink">Son 7 Gun</h2>
         </CardHeader>
         <CardContent>
           <div className="flex items-end gap-3" style={{ height: 180 }}>
@@ -175,7 +175,7 @@ export default function ScrapingStatusPage() {
                   className="flex-1 flex flex-col items-center justify-end"
                   style={{ height: 180 }}
                 >
-                  <span className="text-xs font-medium text-gray-700 mb-1">
+                  <span className="text-xs font-medium text-ink-2 mb-1">
                     {day.count > 0 ? day.count : ""}
                   </span>
                   <div
@@ -188,7 +188,7 @@ export default function ScrapingStatusPage() {
                   <span
                     className={cn(
                       "text-xs mt-2",
-                      isToday ? "font-semibold text-brand-700" : "text-gray-500"
+                      isToday ? "font-semibold text-brand-300" : "text-muted"
                     )}
                   >
                     {dayOfWeek}
@@ -204,12 +204,12 @@ export default function ScrapingStatusPage() {
       {siteBreakdown.length > 0 && (
         <Card>
           <CardHeader>
-            <h2 className="font-semibold text-gray-900">Site Bazli Ozet</h2>
+            <h2 className="font-semibold text-ink">Site Bazli Ozet</h2>
           </CardHeader>
           <CardContent className="p-0">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 text-left text-gray-500">
+                <tr className="border-b border-line text-left text-muted">
                   <th className="px-6 py-2 font-medium">Site</th>
                   <th className="px-6 py-2 font-medium text-right">Kaynaklar</th>
                   <th className="px-6 py-2 font-medium text-right">Toplam</th>
@@ -218,19 +218,19 @@ export default function ScrapingStatusPage() {
               </thead>
               <tbody>
                 {siteBreakdown.map((row) => (
-                  <tr key={row.site} className="border-b border-gray-50 hover:bg-gray-50">
+                  <tr key={row.site} className="border-b border-line hover:bg-surface-2">
                     <td className="px-6 py-2.5">
                       <Badge variant="default">{row.site}</Badge>
                     </td>
-                    <td className="px-6 py-2.5 text-right text-gray-700">{row.sourceCount}</td>
-                    <td className="px-6 py-2.5 text-right font-medium text-gray-900">
+                    <td className="px-6 py-2.5 text-right text-ink-2">{row.sourceCount}</td>
+                    <td className="px-6 py-2.5 text-right font-medium text-ink">
                       {row.totalCollected}
                     </td>
                     <td className="px-6 py-2.5 text-right">
                       <span
                         className={cn(
                           "font-medium",
-                          row.todayCollected > 0 ? "text-green-600" : "text-gray-400"
+                          row.todayCollected > 0 ? "text-mint" : "text-muted-2"
                         )}
                       >
                         {row.todayCollected}
@@ -247,31 +247,31 @@ export default function ScrapingStatusPage() {
       {/* Recent Jobs */}
       <Card>
         <CardHeader>
-          <h2 className="font-semibold text-gray-900">Son Isler</h2>
+          <h2 className="font-semibold text-ink">Son Isler</h2>
         </CardHeader>
         <CardContent className="p-0">
           {recentJobs.length === 0 ? (
-            <p className="text-sm text-gray-500 text-center py-8">Henuz is yok.</p>
+            <p className="text-sm text-muted text-center py-8">Henuz is yok.</p>
           ) : (
-            <div className="divide-y divide-gray-50">
+            <div className="divide-y divide-line">
               {recentJobs.map((job) => (
                 <div key={job.id} className="px-6 py-3 flex items-center gap-3">
                   <Badge variant={statusVariant[job.status] || "default"}>
                     {job.status}
                   </Badge>
                   <Badge variant="default">{job.targetSite}</Badge>
-                  <span className="text-sm text-gray-700 truncate flex-1 min-w-0">
+                  <span className="text-sm text-ink-2 truncate flex-1 min-w-0">
                     {truncate(job.targetUrl, 50)}
                   </span>
-                  <span className="text-xs text-gray-500 whitespace-nowrap">
+                  <span className="text-xs text-muted whitespace-nowrap">
                     {job.processedItems > 0 && (
-                      <span className="text-green-600">{job.processedItems} item</span>
+                      <span className="text-mint">{job.processedItems} item</span>
                     )}
                     {job.failedItems > 0 && (
-                      <span className="text-red-500 ml-2">{job.failedItems} basarisiz</span>
+                      <span className="text-rose ml-2">{job.failedItems} basarisiz</span>
                     )}
                   </span>
-                  <span className="text-xs text-gray-400 whitespace-nowrap">
+                  <span className="text-xs text-muted-2 whitespace-nowrap">
                     {formatDate(job.createdAt)}
                   </span>
                 </div>
@@ -296,13 +296,13 @@ function SummaryCard({
   return (
     <Card>
       <CardContent className="py-4">
-        <p className="text-xs text-gray-500 uppercase tracking-wide">{label}</p>
+        <p className="text-xs text-muted uppercase tracking-wide">{label}</p>
         <p
           className={cn(
             "text-2xl font-bold mt-1",
-            highlight === "green" && "text-green-600",
-            highlight === "blue" && "text-blue-600",
-            !highlight && "text-gray-900"
+            highlight === "green" && "text-mint",
+            highlight === "blue" && "text-sky",
+            !highlight && "text-ink"
           )}
         >
           {value.toLocaleString("tr-TR")}

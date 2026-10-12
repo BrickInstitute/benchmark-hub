@@ -9,8 +9,8 @@ export default function ScrapingPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Scraping</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-ink">Scraping</h1>
+        <p className="text-sm text-muted mt-1">
           UI benchmark sitelerinden otomatik veri toplama
         </p>
       </div>
@@ -22,7 +22,7 @@ export default function ScrapingPage() {
         {/* Manuel tek seferlik scraping */}
         <Card>
           <CardHeader>
-            <h2 className="font-semibold text-gray-900">Tek Seferlik Scraping</h2>
+            <h2 className="font-semibold text-ink">Tek Seferlik Scraping</h2>
           </CardHeader>
           <CardContent>
             <ScrapingForm />
@@ -31,7 +31,7 @@ export default function ScrapingPage() {
 
         {/* Job gecmisi */}
         <div>
-          <h2 className="font-semibold text-gray-900 mb-4">Scraping Gecmisi</h2>
+          <h2 className="font-semibold text-ink mb-4">Scraping Gecmisi</h2>
           <JobList />
         </div>
       </div>
@@ -39,16 +39,16 @@ export default function ScrapingPage() {
       {/* Cron bilgisi */}
       <Card>
         <CardHeader>
-          <h2 className="font-semibold text-gray-900">Zamanlanmis Scraping (Cron)</h2>
+          <h2 className="font-semibold text-ink">Zamanlanmis Scraping (Cron)</h2>
         </CardHeader>
-        <CardContent className="text-sm text-gray-600 space-y-2">
+        <CardContent className="text-sm text-ink-2 space-y-2">
           <p>
             Otomatik zamanlanmis scraping icin asagidaki endpoint&apos;i cron job olarak ayarlayın:
           </p>
-          <code className="block bg-gray-100 px-3 py-2 rounded text-xs">
+          <code className="block bg-surface-3 px-3 py-2 rounded text-xs">
             POST /api/scraping/cron?schedule=daily&key=YOUR_API_KEY
           </code>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted">
             Railway Cron Job veya harici servisler (cron-job.org) ile kullanabilirsiniz.
             <br />
             &bull; <code>?schedule=daily</code> - Gunluk kaynakları calistir

@@ -29,7 +29,7 @@ export function JobList() {
 
   if (jobs.length === 0) {
     return (
-      <p className="text-sm text-gray-500 text-center py-8">
+      <p className="text-sm text-muted text-center py-8">
         Henuz scraping job yok.
       </p>
     );
@@ -57,10 +57,10 @@ export function JobList() {
                   <Badge variant={statusVariant[job.status] || "default"}>
                     {job.status}
                   </Badge>
-                  <span className="text-xs text-gray-400">{job.targetSite}</span>
+                  <span className="text-xs text-muted-2">{job.targetSite}</span>
                 </div>
-                <p className="text-sm text-gray-700 mt-1 truncate">{job.targetUrl}</p>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-sm text-ink-2 mt-1 truncate">{job.targetUrl}</p>
+                <p className="text-xs text-muted-2 mt-1">
                   {formatDate(job.createdAt)} - {job._count.benchmarks} benchmark olusturuldu
                 </p>
               </div>
@@ -71,7 +71,7 @@ export function JobList() {
                     <div className="text-sm font-medium">
                       {job.processedItems}/{job.maxItems}
                     </div>
-                    <div className="w-24 bg-gray-100 rounded-full h-1.5 mt-1">
+                    <div className="w-24 bg-surface-3 rounded-full h-1.5 mt-1">
                       <div
                         className="bg-brand-500 h-1.5 rounded-full transition-all"
                         style={{
@@ -82,12 +82,12 @@ export function JobList() {
                   </div>
                 )}
                 {job.status === "COMPLETED" && (
-                  <span className="text-sm text-green-600 font-medium">
+                  <span className="text-sm text-mint font-medium">
                     {job.processedItems} basarili
                   </span>
                 )}
                 {job.failedItems > 0 && (
-                  <span className="text-xs text-red-500 block">
+                  <span className="text-xs text-rose block">
                     {job.failedItems} basarisiz
                   </span>
                 )}
