@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     const result = await buildPeerCohort({
       url,
       viewport: viewport === "MOBILE" ? "MOBILE" : "DESKTOP",
-      peerCount: typeof peerCount === "number" ? peerCount : 5,
+      peerCount: typeof peerCount === "number" ? peerCount : 10,
       sectorSlug,
     });
 

@@ -89,7 +89,9 @@ export async function buildPeerCohort(options: {
   sectorSlug?: string;
 }): Promise<CohortRunResult> {
   const viewport = options.viewport ?? "DESKTOP";
-  const peerCount = options.peerCount ?? 5;
+  // 10 minimum: below 8 no percentage can be shown, and a few candidates are
+  // always lost to the acceptance gate. Asking for 10 usually leaves enough.
+  const peerCount = options.peerCount ?? 10;
 
   // ---- 1. Target ----
   const probe = await capturePage({ url: options.url, viewport });
