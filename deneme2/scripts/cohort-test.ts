@@ -15,6 +15,13 @@ async function main() {
 
   const r = await buildPeerCohort({ url, peerCount });
 
+  if (r.generatedCatalogue) {
+    console.log(`\n[YENİ SEKTÖR] Bu sektör için katalog ilk kez oluşturuldu.`);
+    console.log(`  kabul edilen ölçüt: ${r.generatedCatalogue.criteriaCount}`);
+    console.log(`  reddedilen        : ${r.generatedCatalogue.rejectedCount}`);
+    for (const reason of r.generatedCatalogue.rejectedReasons) console.log(`    - ${reason}`);
+  }
+
   console.log(`\nhedef: ${r.identity?.institution}`);
   console.log(`sektör: ${r.identity?.sectorName} (${r.identity?.sectorSlug}) / ${r.identity?.country}`);
   console.log(`sayfa: "${r.identity?.pageTopic}" rol=${r.identity?.pageRole}`);

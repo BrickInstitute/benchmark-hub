@@ -142,3 +142,36 @@ için `absent` sayılamaz.
 Bu liste kısalmadan "güvenilir ölçüyoruz" denmemeli. Şu an kurulabilecek iddia
 şudur: *belirli ölçütleri kanıta bağlayarak ölçüyoruz ve ölçemediğimizi
 ölçemedik diye işaretliyoruz.*
+
+## Sektör hazırlığı yok, canlı üretim var
+
+Daha önceki yaklaşım, sektör kataloğunun bir insan tarafından önceden
+yazılmasını gerektiriyordu (`data/criteria/*.json`). Bu, kullanıcının
+"herhangi bir sektör" isteğiyle uyuşmuyor: bir web sitesi hangi sektöre ait
+olursa olsun (iç giyim, zincir market, ne gelirse), sistemin onu **ilk
+görüşte** ölçebilmesi gerekiyor.
+
+Bunun için `catalogue-generation.ts` eklendi. `cohort.ts`, bir sektör için
+hiç katalog yoksa artık hata fırlatmak yerine modele o sektöre özgü ölçüt
+kümesini önerttirir (`generateSectorCatalogue`), öneriyi yazılımla doğrular
+(`validateCriteria`) ve geçerli olanı `materializeSectorCatalogue` ile aynı
+şekilde kalıcı hale getirir — elle yazılmış JSON de, modelin canlı önerisi de
+aynı fonksiyondan geçer, biri diğerinden daha güvenilir sayılmaz.
+
+Buradaki sınırlar:
+
+- **P6 modelden asla istenmez.** Yoğunluk sayım gerektirir; model "az/orta/çok"
+  gibi bir izlenim değil, yazılımın sayabileceği somut bir öğe listesi
+  üretemez. Model yalnızca P1/P2/P3/P4/P5/P7 kalıplarında ölçüt önerebilir.
+- **`steps` modelden gelmez.** Her kalıbın zaten tek, sabit bir basamak
+  sözlüğü var (`PATTERN_STEPS`); model bunu yeniden icat edemez, yalnızca
+  hangi ölçütün hangi kalıba girdiğini söyler.
+- **Üretilen paket `DRAFT` kalır.** Otomatik olarak güvenilir sayılmaz; uyum
+  testinden geçmemiş bir katalogla elle yazılmış, gözden geçirilmiş bir
+  katalog aynı güven düzeyinde değildir. Bu, yukarıdaki "Uyum testi" maddesini
+  genişletir, onun yerine geçmez.
+- **Sektör adı/slug'ı tutarlı değil.** Aynı şirket iki ayrı analizde iki farklı
+  sektör kovasına düşebilir (ör. Penti bir seferde "giyim-perakende", başka
+  seferde "hazir-giyim" olarak adlandırılabilir), çünkü sektör ismini de aynı
+  canlı çağrı üretiyor. Bu, aynı kurumun geçmişteki ölçümlerinin otomatik
+  birleşmesini engelliyor ve henüz çözülmedi.
