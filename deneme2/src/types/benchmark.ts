@@ -32,24 +32,6 @@ export interface BenchmarkDetail extends BenchmarkListItem {
   layoutType: string | null;
   status: string;
   isUploaded: boolean;
-  scores: ScoreSummary[];
-}
-
-export interface ScoreSummary {
-  id: string;
-  overallScore: number;
-  visualConsistency: number;
-  layoutQuality: number;
-  typography: number;
-  colorHarmony: number;
-  whitespaceUsage: number;
-  accessibilityScore: number;
-  feedback: string;
-  strengths: string[] | null;
-  improvements: string[] | null;
-  aiProvider: string;
-  aiModel: string;
-  createdAt: string;
 }
 
 export interface BenchmarkFilters {

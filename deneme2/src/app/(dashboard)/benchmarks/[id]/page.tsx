@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { useBenchmark } from "@/hooks/use-benchmarks";
@@ -8,32 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatDate, formatScore } from "@/lib/utils";
-import { ScoreBreakdown } from "@/components/scoring/score-breakdown";
+import { formatDate } from "@/lib/utils";
 import { AnalysisPanel } from "@/components/analysis/analysis-panel";
 
 export default function BenchmarkDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { benchmark, isLoading, mutate } = useBenchmark(params.id as string);
-  const [isScoring, setIsScoring] = useState(false);
-
-  const handleScore = async () => {
-    if (!benchmark) return;
-    setIsScoring(true);
-    try {
-      await fetch("/api/scoring", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ benchmarkId: benchmark.id }),
-      });
-      mutate();
-    } catch {
-      // Error handled
-    } finally {
-      setIsScoring(false);
-    }
-  };
+  const { benchmark, isLoading } = useBenchmark(params.id as string);
 
   if (isLoading) {
     return (
@@ -55,8 +35,6 @@ export default function BenchmarkDetailPage() {
     );
   }
 
-  const latestScore = benchmark.scores?.[0];
-
   return (
     <div className="max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-6">
@@ -73,32 +51,10 @@ export default function BenchmarkDetailPage() {
             {benchmark.sourceSite && (
               <Badge>{benchmark.sourceSite}</Badge>
             )}
-            {benchmark.isUploaded && (
-              <Badge variant="success">Yuklendi</Badge>
-            )}
             <span className="text-sm text-muted-2">
               {formatDate(benchmark.createdAt)}
             </span>
           </div>
-        </div>
-
-        <div className="flex gap-3">
-          <Button
-            variant="primary"
-            onClick={handleScore}
-            disabled={isScoring}
-          >
-            {isScoring ? (
-              <span className="flex items-center gap-2">
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Skorlaniyor...
-              </span>
-            ) : latestScore ? (
-              "Tekrar Skorla"
-            ) : (
-              "AI ile Skorla"
-            )}
-          </Button>
         </div>
       </div>
 
@@ -120,32 +76,9 @@ export default function BenchmarkDetailPage() {
               </CardContent>
             )}
           </Card>
-
         </div>
 
         <div className="space-y-6">
-          {/* Score */}
-          {latestScore && (
-            <Card>
-              <CardHeader>
-                <h2 className="font-semibold text-ink">AI Skoru</h2>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center mb-4">
-                  <span className="text-4xl font-bold text-brand-300">
-                    {formatScore(latestScore.overallScore)}
-                  </span>
-                  <span className="text-muted-2 text-lg">/10</span>
-                </div>
-                <ScoreBreakdown score={latestScore} />
-                <p className="text-xs text-muted-2 mt-3 text-center">
-                  {latestScore.aiModel} - {formatDate(latestScore.createdAt)}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Metadata */}
           <Card>
             <CardHeader>
               <h2 className="font-semibold text-ink">Detaylar</h2>
@@ -170,27 +103,6 @@ export default function BenchmarkDetailPage() {
                   <p className="text-sm">{benchmark.width} x {benchmark.height}</p>
                 </div>
               )}
-              {benchmark.layoutType && (
-                <div>
-                  <span className="text-xs text-muted">Layout Tipi</span>
-                  <p className="text-sm">{benchmark.layoutType}</p>
-                </div>
-              )}
-              {benchmark.dominantColors && (
-                <div>
-                  <span className="text-xs text-muted">Renkler</span>
-                  <div className="flex gap-1 mt-1">
-                    {(benchmark.dominantColors as string[]).map((color: string, i: number) => (
-                      <div
-                        key={i}
-                        className="w-6 h-6 rounded border border-line"
-                        style={{ backgroundColor: color }}
-                        title={color}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
               {benchmark.tags?.length > 0 && (
                 <div>
                   <span className="text-xs text-muted">Etiketler</span>
@@ -203,65 +115,6 @@ export default function BenchmarkDetailPage() {
               )}
             </CardContent>
           </Card>
-
-          {/* AI Feedback */}
-          {latestScore?.feedback && (
-            <Card>
-              <CardHeader>
-                <h2 className="font-semibold text-ink">AI Analizi</h2>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-ink-2 whitespace-pre-wrap">
-                  {latestScore.feedback}
-                </p>
-                {latestScore.strengths && (
-                  <div className="mt-4">
-                    <h3 className="text-xs font-semibold text-mint uppercase mb-2">Guclu Yonler</h3>
-                    <ul className="space-y-1">
-                      {(latestScore.strengths as string[]).map((s: string, i: number) => (
-                        <li key={i} className="text-sm text-ink-2 flex items-start gap-1">
-                          <span className="text-mint mt-0.5">+</span> {s}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {latestScore.improvements && (
-                  <div className="mt-4">
-                    <h3 className="text-xs font-semibold text-peach uppercase mb-2">Gelistirme Alanlari</h3>
-                    <ul className="space-y-1">
-                      {(latestScore.improvements as string[]).map((s: string, i: number) => (
-                        <li key={i} className="text-sm text-ink-2 flex items-start gap-1">
-                          <span className="text-peach mt-0.5">!</span> {s}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Score history */}
-          {benchmark.scores?.length > 1 && (
-            <Card>
-              <CardHeader>
-                <h2 className="font-semibold text-ink">Skor Gecmisi</h2>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {benchmark.scores.map((score: { id: string; overallScore: number; aiModel: string; createdAt: string }, i: number) => (
-                    <div key={score.id} className="flex items-center justify-between text-sm">
-                      <span className="text-muted">
-                        {i === 0 ? "Son" : `#${benchmark.scores.length - i}`} - {formatDate(score.createdAt)}
-                      </span>
-                      <span className="font-medium">{formatScore(score.overallScore)}/10</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
       </div>
 

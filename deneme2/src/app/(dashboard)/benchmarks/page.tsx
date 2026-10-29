@@ -76,9 +76,6 @@ function CategoryFolders() {
           <Link href="/benchmarks?category=all">
             <Button variant="secondary" size="sm">Tumunu Gor</Button>
           </Link>
-          <Link href="/upload">
-            <Button variant="primary" size="sm">Yukle</Button>
-          </Link>
         </div>
       </div>
 
@@ -168,14 +165,6 @@ function CategoryView() {
               {total} benchmark
             </p>
           </div>
-        </div>
-        <div className="flex gap-3">
-          <Link href="/upload">
-            <Button variant="primary" size="sm">Yukle</Button>
-          </Link>
-          <Link href="/scraping">
-            <Button variant="secondary" size="sm">Scrape</Button>
-          </Link>
         </div>
       </div>
 

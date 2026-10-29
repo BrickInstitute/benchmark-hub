@@ -619,13 +619,19 @@ export function collectDomSnapshot(): DomSnapshot {
       document.body.scrollHeight,
       document.documentElement.scrollHeight,
     );
-    const candidates = Array.from(document.querySelectorAll("body > *, body > div > *"))
-      .filter((el) => {
-        if (!isVisible(el)) return false;
-        const r = el.getBoundingClientRect();
-        if (r.height < 120 || r.width < vw * 0.5) return false;
-        return toBox(r).y > pageBottom * 0.7;
-      })
+    // Not limited to two DOM levels: a framework root wrapper (e.g. a single
+    // #__next div) can push the real footer several levels deeper, and a
+    // fixed-depth selector misses it entirely. Any element qualifies as long
+    // as it is wide, low enough, and not itself inside another candidate
+    // (the outermost such wrapper is preferred over its own children).
+    const rawCandidates = Array.from(document.querySelectorAll("*")).filter((el) => {
+      if (!isVisible(el)) return false;
+      const r = el.getBoundingClientRect();
+      if (r.height < 120 || r.width < vw * 0.5) return false;
+      return toBox(r).y > pageBottom * 0.7;
+    });
+    const candidates = rawCandidates
+      .filter((el) => !rawCandidates.some((other) => other !== el && other.contains(el)))
       .sort((a, b) => b.getBoundingClientRect().top - a.getBoundingClientRect().top);
     if (candidates[0]) {
       footerAdded = addRegion(candidates[0], "FOOTER", "Footer", "lowest large block");
@@ -677,7 +683,17 @@ export function collectDomSnapshot(): DomSnapshot {
   }
 
   // Card lists: three or more sibling elements sharing a class signature.
+  //
+  // Without a height bound this misfires badly: a page can have 3-4 large
+  // top-level content sections that happen to share the same wrapper tag and
+  // class (common with CMS-driven "section" blocks). One bank page had four
+  // such sections classified as a single "card list" spanning 4534px - nearly
+  // the whole page. A real card is a small, grid-like repeated unit, not a
+  // stack of full-page sections, so both an absolute height cap AND a
+  // within-group uniformity check are required.
   const CARD_LIMIT = 6;
+  const MAX_CARD_HEIGHT = 500;
+  const MAX_HEIGHT_RATIO = 2; // tallest card can be at most 2x the shortest
   let cardLists = 0;
   document.querySelectorAll("ul, div, section").forEach((parent) => {
     if (cardLists >= CARD_LIMIT) return;
@@ -685,35 +701,58 @@ export function collectDomSnapshot(): DomSnapshot {
     const children = Array.from(parent.children).filter((c) => {
       if (!isVisible(c)) return false;
       const cr = c.getBoundingClientRect();
-      return cr.width > 80 && cr.height > 80;
+      return cr.width > 80 && cr.height > 80 && cr.height <= MAX_CARD_HEIGHT;
     });
     if (children.length < 3) return;
     const signature = (c: Element) =>
       c.tagName + "|" + (c.getAttribute("class") || "").split(/\s+/).slice(0, 2).join(" ");
     const signatures = new Set(children.map(signature));
     if (signatures.size > 1) return; // not a uniform list
+
+    const heights = children.map((c) => c.getBoundingClientRect().height);
+    if (Math.max(...heights) > Math.min(...heights) * MAX_HEIGHT_RATIO) return;
+
     const pr = parent.getBoundingClientRect();
-    if (pr.height < 120) return;
+    if (pr.height < 120 || pr.height > MAX_CARD_HEIGHT * 3) return;
     addRegion(parent, "CARD_LIST", `Kart listesi (${children.length})`, `${children.length} uniform siblings`);
     cardLists++;
   });
 
-  // Hero: the first wide, tall block that starts inside the first screen and
-  // is not already claimed as menu or cookie.
-  const heroCandidates = Array.from(document.querySelectorAll("section, div, header > div"));
-  for (const el of heroCandidates) {
-    if (claimed.has(el)) continue;
-    if (!isVisible(el)) continue;
+  // Hero: a wide, tall block that starts inside the first screen and is not
+  // already claimed as menu or cookie.
+  //
+  // Picking the FIRST matching element in document order favours outer layout
+  // wrappers over actual hero content - a wrapper div around the whole first
+  // viewport (menu included) satisfies the same width/height bounds and
+  // appears earlier in a pre-order traversal than the real hero block nested
+  // inside it. One bank page produced a "hero" that was exactly one viewport
+  // tall and quietly swallowed the menu. Two guards fix this: reject any
+  // candidate that CONTAINS an already-claimed region (menu, cookie, ...),
+  // and among what remains prefer the SMALLEST area - the tightest-fitting
+  // candidate is the actual content block, not its wrapper.
+  const heroExclusions = Array.from(claimed);
+  let bestHero: Element | null = null;
+  let bestHeroArea = Infinity;
+  document.querySelectorAll("section, div, header > div").forEach((el) => {
+    if (claimed.has(el)) return;
+    if (!isVisible(el)) return;
+    if (heroExclusions.some((other) => el !== other && el.contains(other))) return;
     const r = el.getBoundingClientRect();
     const box = toBox(r);
-    if (box.y > vh * 0.9) continue;
-    if (r.width < vw * 0.8) continue;
-    if (r.height < vh * 0.25 || r.height > vh * 1.6) continue;
-    if (!isOnScreen(box)) continue;
+    if (box.y > vh * 0.9) return;
+    if (r.width < vw * 0.8) return;
+    if (r.height < vh * 0.25 || r.height > vh * 1.6) return;
+    if (!isOnScreen(box)) return;
     // Must contain some text, otherwise it is a layout wrapper.
-    if (elementText(el).length < 10) continue;
-    addRegion(el, "HERO", "Hero / ana teklif", "first wide block in viewport");
-    break;
+    if (elementText(el).length < 10) return;
+    const area = r.width * r.height;
+    if (area < bestHeroArea) {
+      bestHeroArea = area;
+      bestHero = el;
+    }
+  });
+  if (bestHero) {
+    addRegion(bestHero, "HERO", "Hero / ana teklif", "smallest qualifying block in viewport");
   }
 
   // Trust signals: a block whose text carries certification or award wording.

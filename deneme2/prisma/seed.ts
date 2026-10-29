@@ -21,89 +21,6 @@ const tags = [
   "navigation", "footer", "form", "modal", "pricing", "testimonials",
 ];
 
-const defaultSources = [
-  {
-    name: "Dribbble Popular Shots",
-    url: "https://dribbble.com/shots/popular",
-    site: "dribbble",
-    maxItems: 20,
-    schedule: "daily",
-    categorySlug: "components",
-  },
-  {
-    name: "Dribbble Web Design",
-    url: "https://dribbble.com/tags/web-design",
-    site: "dribbble",
-    maxItems: 15,
-    schedule: "daily",
-    categorySlug: "landing-pages",
-  },
-  {
-    name: "Mobbin iOS Apps",
-    url: "https://mobbin.com/browse/ios/apps",
-    site: "mobbin",
-    maxItems: 20,
-    schedule: "weekly",
-    categorySlug: "mobile-screens",
-  },
-  {
-    name: "Landingfolio Inspiration",
-    url: "https://www.landingfolio.com/inspiration/landing-page",
-    site: "landingfolio",
-    maxItems: 15,
-    schedule: "weekly",
-    categorySlug: "landing-pages",
-  },
-  {
-    name: "Awwwards Sites of the Day",
-    url: "https://www.awwwards.com/websites/sites_of_the_day/",
-    site: "awwwards",
-    maxItems: 20,
-    schedule: "daily",
-    categorySlug: "landing-pages",
-  },
-  {
-    name: "Behance UI/UX",
-    url: "https://www.behance.net/search/projects?field=ui%2Fux",
-    site: "behance",
-    maxItems: 20,
-    schedule: "weekly",
-    categorySlug: "portfolio",
-  },
-  {
-    name: "Collect UI Daily",
-    url: "https://collectui.com/designs",
-    site: "collectui",
-    maxItems: 20,
-    schedule: "daily",
-    categorySlug: "components",
-  },
-  {
-    name: "SiteInspire Curated",
-    url: "https://www.siteinspire.com/",
-    site: "siteinspire",
-    maxItems: 15,
-    schedule: "weekly",
-    categorySlug: "landing-pages",
-  },
-  {
-    name: "Lapa.ninja Landing Pages",
-    url: "https://www.lapa.ninja/",
-    site: "lapa",
-    maxItems: 15,
-    schedule: "weekly",
-    categorySlug: "landing-pages",
-  },
-  {
-    name: "WebInspo Gallery",
-    url: "https://www.webinspo.com/",
-    site: "webinspo",
-    maxItems: 15,
-    schedule: "weekly",
-    categorySlug: "landing-pages",
-  },
-];
-
 async function main() {
   console.log("Seeding categories...");
   for (const cat of categories) {
@@ -125,16 +42,6 @@ async function main() {
       update: {},
       create: { name, slug: tag },
     });
-  }
-
-  console.log("Seeding default scraping sources...");
-  for (const source of defaultSources) {
-    const existing = await prisma.scrapingSource.findFirst({
-      where: { url: source.url },
-    });
-    if (!existing) {
-      await prisma.scrapingSource.create({ data: source });
-    }
   }
 
   console.log("Seed completed.");

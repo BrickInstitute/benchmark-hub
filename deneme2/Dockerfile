@@ -68,19 +68,20 @@ COPY --from=deps /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=deps /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=deps /app/node_modules/prisma ./node_modules/prisma
 
-# Copy playwright from deps (needed at runtime for scraping)
+# Copy Playwright (needed at runtime: src/lib/measurement/capture.ts drives it
+# directly, outside Next's own server bundle trace)
 COPY --from=deps /app/node_modules/playwright ./node_modules/playwright
 COPY --from=deps /app/node_modules/playwright-core ./node_modules/playwright-core
 
-# Copy Anthropic SDK (needed by worker.mjs for direct scoring)
+# Copy Anthropic SDK (needed by src/lib/measurement/extraction.ts and
+# peer-discovery.ts for model calls)
 COPY --from=deps /app/node_modules/@anthropic-ai ./node_modules/@anthropic-ai
 
 # Create upload directory and cache directory
 RUN mkdir -p /app/data/uploads && chown -R nextjs:nodejs /app/data
 RUN mkdir -p /app/.next/cache && chown -R nextjs:nodejs /app/.next/cache
 
-# Copy worker and start script
-COPY worker.mjs ./worker.mjs
+# Copy start script
 COPY start.sh ./start.sh
 RUN chmod +x /app/start.sh
 
@@ -89,5 +90,4 @@ ENV HOME=/home/nextjs
 EXPOSE ${PORT:-3000}
 ENV HOSTNAME="0.0.0.0"
 
-# Start both Next.js server and worker process
 CMD ["/app/start.sh"]

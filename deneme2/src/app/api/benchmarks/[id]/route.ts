@@ -10,10 +10,6 @@ export async function GET(
     include: {
       category: true,
       tags: { include: { tag: true } },
-      scores: {
-        orderBy: { createdAt: "desc" },
-        take: 5,
-      },
     },
   });
 

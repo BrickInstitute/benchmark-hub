@@ -8,7 +8,6 @@ const nextConfig = {
   },
   experimental: {
     serverComponentsExternalPackages: ["sharp", "playwright"],
-    instrumentationHook: true,
   },
   eslint: {
     ignoreDuringBuilds: true,

@@ -1,7 +1,7 @@
 /**
  * Page capture for measurement.
  *
- * Different from the scrapers in src/lib/scraping: those collect many examples
+ * Historically there were also scrapers that collected many examples
  * from gallery sites. This one captures ONE page under controlled conditions
  * so its regions, criteria and evidence can be measured and compared.
  *
