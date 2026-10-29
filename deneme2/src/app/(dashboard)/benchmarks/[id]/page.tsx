@@ -62,10 +62,17 @@ export default function BenchmarkDetailPage() {
         <div className="lg:col-span-2">
           <Card>
             <div className="capture-mat relative aspect-video rounded-t-xl overflow-hidden">
+              {/* unoptimized: next/image's optimizer fetches the source via a
+                  server-side request to this app, which carries none of the
+                  browser's cookies. Behind the login gate that request 401s
+                  on every single screenshot. Loading the image directly in
+                  the browser (which does send the cookie) avoids the problem
+                  without opening /api/files up to unauthenticated access. */}
               <Image
                 src={`/api/files/${benchmark.imagePath}`}
                 alt={benchmark.title}
                 fill
+                unoptimized
                 className="object-contain"
                 sizes="(max-width: 1024px) 100vw, 66vw"
               />
