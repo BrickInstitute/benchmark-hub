@@ -175,3 +175,29 @@ Buradaki sınırlar:
   seferde "hazir-giyim" olarak adlandırılabilir), çünkü sektör ismini de aynı
   canlı çağrı üretiyor. Bu, aynı kurumun geçmişteki ölçümlerinin otomatik
   birleşmesini engelliyor ve henüz çözülmedi.
+- **Aynı kök neden, kurum adında da var.** `CohortMember`in benzersizlik
+  anahtarı `(cohortId, institution)` - `identifyTarget`/`proposePeers` aynı
+  bankayı iki ayrı analizde "Garanti BBVA" ve "Türkiye Garanti Bankası" gibi
+  farklı adlandırırsa, aynı kurum kohortta İKİ AYRI muadil olarak sayılır.
+  Canlı test sırasında gözlemlendi (bkz. commit `6d1640b`): payda şişer,
+  `rating` ve yaygınlık hesapları sessizce yanlış yönde ağırlıklanır. Kanonik
+  kurum kimliği (muhtemelen alan adına göre) olmadan çözülmez.
+
+## Ölçütün kendisi hakkında, gözlem değil
+
+`description` ve `betterDirection`, sözlük düzeyinde bir kez yazılır - bir
+gözlemin sonucuna göre değil. `description` neyin ölçüldüğünü ve neden önemli
+olduğunu anlatır; hiçbir kurumun adını geçirmez, hiçbir zaman "X bunu iyi
+yapıyor" demez. `betterDirection` modelden ASC/DESC olarak İSTENMEZ: ilk
+denemede model, basamak dizisinin kendi sırasına bakmadan soyut yön
+tahmininde sistematik olarak yanıldı (P5 derinlikte "az tıklama iyidir" doğru
+tespitini yanlışlıkla ASC etiketledi). Bunun yerine model yalnızca somut "en
+iyi basamağı" kendi kelimeleriyle adlandırır; yön, o değerin gerçek
+`steps` dizisindeki konumundan yazılımla hesaplanır. Bir ölçütün yarısı için
+yanlış yön, hiç yön olmamasından kötüdür - bu yüzden `betterDirection` yalnız
+%100 dizi-konumundan türetilmiş olabilir, asla model sözünden.
+
+`rating` (API, `computeRating`) aynı disiplini gözlem düzeyinde uygular: en az
+5 karşılaştırılabilir muadil VE sözlükte incelenmiş bir yön olmadan hiçbir
+zaman bir yüzdelik dilim üretmez - `null` döner, UI de bunu "yargı yok" olarak
+gösterir, asla uydurma bir ortalama değil.
