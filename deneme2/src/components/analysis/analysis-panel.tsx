@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import useSWR from "swr";
+import { InteractiveScreenshot } from "./interactive-screenshot";
+import type { AnalysisData, Observation, Status } from "@/types/analysis";
 
 /**
  * The analysis view.
@@ -15,55 +17,6 @@ import useSWR from "swr";
  * 3. Coverage is shown next to prevalence: "4 of 5 measured" is how much to
  *    trust "3 of 4 have it".
  */
-
-type Status = "PRESENT" | "ABSENT" | "UNKNOWN" | "NOT_APPLICABLE";
-
-interface Observation {
-  code: string;
-  featureId: string | null;
-  question: string;
-  rule: string;
-  pattern: string;
-  steps: string[];
-  value: string | null;
-  rawCount: number | null;
-  status: Status;
-  note: string | null;
-  domMatch: string;
-  awaitingConfirmation: boolean;
-  regionId: string | null;
-  regionName: string | null;
-  evidence: Array<{
-    text: string;
-    box: { x: number; y: number; w: number; h: number } | null;
-    source: string;
-    ambiguous: boolean;
-  }>;
-  cohort: {
-    denominator: number;
-    rows: Array<{ value: string; count: number; percent: number | null }>;
-    excluded: { unknown: number; notApplicable: number };
-    coverage: { measured: number; cohortSize: number; percent: number | null };
-  };
-}
-
-interface AnalysisData {
-  benchmark: {
-    institution: string | null;
-    viewport: string;
-    captureStatus: string;
-    qualityPassed: boolean;
-    sector: string | null;
-  };
-  regions: Array<{
-    id: string;
-    type: string;
-    name: string;
-    box: { x: number; y: number; w: number; h: number };
-  }>;
-  observations: Observation[];
-  cohort: { size: number; percentagesWithheld: boolean };
-}
 
 const STATUS_STYLE: Record<Status, { label: string; className: string }> = {
   // Deliberately not a traffic light: this reports prevalence, not quality.
@@ -213,6 +166,8 @@ export function AnalysisPanel({ benchmarkId }: { benchmarkId: string }) {
         </p>
       </div>
 
+      <InteractiveScreenshot analysis={analysis} />
+
       {analysis.regions.length > 0 && (
         <div className="flex flex-wrap gap-2">
           <button
@@ -247,7 +202,11 @@ export function AnalysisPanel({ benchmarkId }: { benchmarkId: string }) {
 
       <div className="space-y-3">
         {visible.map((o) => (
-          <div key={o.code} className="rounded-xl border border-line bg-surface p-5">
+          <div
+            key={o.code}
+            id={`obs-${o.code}`}
+            className="scroll-mt-24 rounded-xl border border-line bg-surface p-5 transition-shadow"
+          >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">

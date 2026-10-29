@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, type RegionType } from "@prisma/client";
 import { distribution, MIN_DENOMINATOR_FOR_PERCENT } from "@/lib/measurement/patterns";
 
 const prisma = new PrismaClient();
@@ -53,13 +53,66 @@ export async function GET(
   const peerObservations = peerIds.length
     ? await prisma.observation.findMany({
         where: { benchmarkId: { in: peerIds }, awaitingConfirmation: false },
-        select: { criterionId: true, value: true, status: true },
+        include: { evidence: true },
       })
     : [];
+
+  // A peer's own screenshot + size, so a hotspot can show a cropped preview of
+  // the SAME feature on the SAME institution rather than a generic thumbnail.
+  const peerBenchmarks = peerIds.length
+    ? await prisma.benchmark.findMany({
+        where: { id: { in: peerIds } },
+        select: { id: true, institution: true, imagePath: true, width: true, height: true },
+      })
+    : [];
+  const peerBenchmarkById = new Map(peerBenchmarks.map((b) => [b.id, b]));
+
+  // Fallback box when a peer has no evidence of its own for this criterion
+  // (e.g. it is ABSENT, so there is nothing to point at): the peer's own
+  // region of the same TYPE as the target's region for this criterion. Region
+  // ids never carry across benchmarks, only types do.
+  const regionTypes = [
+    ...new Set(benchmark.observations.map((o) => o.region?.type).filter((t): t is RegionType => Boolean(t))),
+  ];
+  const peerRegions = peerIds.length && regionTypes.length
+    ? await prisma.region.findMany({
+        where: { benchmarkId: { in: peerIds }, type: { in: regionTypes } },
+        select: { benchmarkId: true, type: true, x: true, y: true, w: true, h: true },
+      })
+    : [];
+  const peerRegionBox = new Map<string, { x: number; y: number; w: number; h: number }>();
+  for (const r of peerRegions) {
+    peerRegionBox.set(`${r.benchmarkId}:${r.type}`, { x: r.x, y: r.y, w: r.w, h: r.h });
+  }
 
   const items = benchmark.observations.map((o) => {
     const rows = peerObservations.filter((p) => p.criterionId === o.criterionId);
     const d = distribution(rows);
+
+    const peers = rows
+      .map((p) => {
+        const b = peerBenchmarkById.get(p.benchmarkId);
+        if (!b) return null;
+        const evidenceBox = p.evidence[0];
+        const box =
+          evidenceBox?.x !== null && evidenceBox?.x !== undefined
+            ? { x: evidenceBox.x, y: evidenceBox.y!, w: evidenceBox.w!, h: evidenceBox.h! }
+            : (o.region ? peerRegionBox.get(`${b.id}:${o.region.type}`) : undefined) ?? null;
+        return {
+          institution: b.institution ?? "Bilinmeyen",
+          benchmarkId: b.id,
+          status: p.status,
+          value: p.value,
+          rawCount: p.rawCount,
+          image: { path: b.imagePath, width: b.width, height: b.height },
+          box,
+        };
+      })
+      .filter((p): p is NonNullable<typeof p> => p !== null)
+      // Institutions that actually show the feature first - that is what a
+      // user comparing "who has this" wants to see without scrolling.
+      .sort((a, b) => (a.status === "PRESENT" ? -1 : 1) - (b.status === "PRESENT" ? -1 : 1));
+
     return {
       code: o.criterion.code,
       featureId: o.criterion.featureId,
@@ -92,6 +145,7 @@ export async function GET(
             cohortSize === 0 ? null : Math.round((d.denominator / cohortSize) * 100),
         },
       },
+      peers,
     };
   });
 

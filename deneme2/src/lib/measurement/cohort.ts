@@ -281,7 +281,12 @@ export async function buildPeerCohort(options: {
 
   // One row per institution: the unique key makes five captures of the same
   // bank impossible to count as five banks.
-  for (const m of acceptedBenchmarks) {
+  //
+  // The target itself is a member too, not just the institutions it was
+  // compared against. Leaving it out would mean the one page a user actually
+  // submitted - the one whose detail view they open first - can never find
+  // its own peers, because peer lookup elsewhere keys off cohort membership.
+  for (const m of [...acceptedBenchmarks, { institution: identity.institution, benchmarkId: targetRun.benchmarkId }]) {
     await prisma.cohortMember.upsert({
       where: { cohortId_institution: { cohortId: cohort.id, institution: m.institution } },
       update: { benchmarkId: m.benchmarkId },
