@@ -25,11 +25,21 @@ export interface PeerObservation {
   box: Box | null;
 }
 
+export interface Rating {
+  comparableCount: number;
+  peersBetterCount: number;
+  peersSameCount: number;
+  peersWorseCount: number;
+  percentile: number;
+}
+
 export interface Observation {
   code: string;
   featureId: string | null;
   question: string;
   rule: string;
+  description: string | null;
+  betterDirection: "ASC" | "DESC" | null;
   pattern: string;
   steps: string[];
   value: string | null;
@@ -53,6 +63,7 @@ export interface Observation {
     coverage: { measured: number; cohortSize: number; percent: number | null };
   };
   peers: PeerObservation[];
+  rating: Rating | null;
 }
 
 export interface AnalysisData {

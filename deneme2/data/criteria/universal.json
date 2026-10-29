@@ -32,7 +32,9 @@
       "featureId": "nav.primary.item_count",
       "scopeRegions": [
         "MENU"
-      ]
+      ],
+      "description": "Ana menüde yer alan ve doğrudan görünen birinci seviye bağlantı sayısını ölçer. Menü ne kadar kalabalıksa ziyaretçinin doğru yeri bulması o kadar zorlaşabilir; az ve öz bir menü genelde kullanım kolaylığı sağlar.",
+      "betterDirection": null
     },
     {
       "code": "U02",
@@ -54,7 +56,9 @@
       "scopeRegions": [
         "MENU",
         "HERO"
-      ]
+      ],
+      "description": "Sitede çalışan bir arama kutusu veya arama simgesi bulunup bulunmadığını kontrol eder. Arama özelliği, ziyaretçilerin aradıkları bilgiye menüde gezinmeden hızlıca ulaşmasını sağlar.",
+      "betterDirection": "DESC"
     },
     {
       "code": "U03",
@@ -84,7 +88,9 @@
       "featureId": "cta.primary.count_above_fold",
       "scopeRegions": [
         "HERO"
-      ]
+      ],
+      "description": "Sayfa ilk açıldığında ekranda görünen, eylem bildiren buton sayısını ölçer (ör. 'Hemen Başla', 'Teklif Al'). Çok fazla buton kullanıcıyı kararsız bırakabilirken, hiç olmaması dönüşümü zorlaştırır.",
+      "betterDirection": null
     },
     {
       "code": "U04",
@@ -102,7 +108,9 @@
       "featureId": "cta.primary.placement",
       "scopeRegions": [
         "HERO"
-      ]
+      ],
+      "description": "Sayfadaki en önemli eylem butonunun (örn. 'Satın Al', 'Başvur') sayfanın neresinde yer aldığını gösterir. Buton ne kadar erken görünürse ziyaretçinin onu fark edip tıklama ihtimali o kadar artar.",
+      "betterDirection": "DESC"
     },
     {
       "code": "U05",
@@ -123,7 +131,9 @@
       ],
       "scopeRegions": [
         "HERO"
-      ]
+      ],
+      "description": "Sayfanın ana başlığının somut bir fayda sunup sunmadığını değerlendirir. Rakamlarla ifade edilen net vaatler ('48 saatte sonuç') genelde jenerik sloganlardan daha ikna edicidir.",
+      "betterDirection": "DESC"
     },
     {
       "code": "U06",
@@ -139,7 +149,9 @@
       ],
       "parametric": true,
       "defaultRegion": "CONTENT",
-      "featureId": "conversion.depth"
+      "featureId": "conversion.depth",
+      "description": "Ziyaretçinin asıl hedeflenen işlemi (ör. satın alma, kayıt) tamamlamak için kaç tıklama yapması gerektiğini ölçer. Hedefe daha az tıklamayla ulaşılması genelde dönüşüm oranını artırır.",
+      "betterDirection": "DESC"
     },
     {
       "code": "U07",
@@ -161,7 +173,9 @@
         "FOOTER",
         "CONTENT",
         "MENU"
-      ]
+      ],
+      "description": "Telefon numarası veya adres gibi iletişim bilgisinin sayfanın neresinde yer aldığını gösterir. Bu bilginin erken ve kolay görülür olması güven oluşturur ve iletişimi kolaylaştırır.",
+      "betterDirection": null
     },
     {
       "code": "U08",
@@ -178,7 +192,9 @@
       "featureId": "support.live.level",
       "exclusions": [
         "Yalnızca iletişim sayfasına bağlantı gömülü sohbet sayılmaz"
-      ]
+      ],
+      "description": "Canlı destek imkânının ne kadar erişilebilir sunulduğunu değerlendirir: sayfada doğrudan açılan bir sohbet penceresi mi, ayrı bir sayfaya yönlendirme mi, yoksa sadece yazılı iletişim bilgisi mi var. Anında sohbet imkânı genelde kullanıcı deneyimini güçlendirir.",
+      "betterDirection": "DESC"
     },
     {
       "code": "U09",
@@ -200,7 +216,9 @@
       "scopeRegions": [
         "TRUST",
         "FOOTER"
-      ]
+      ],
+      "description": "Sayfada hangi tür güven unsurlarının (müşteri yorumları, sayısal başarı iddiaları, sertifikalar, basın/ödüller, kurumsal referanslar) kullanıldığını listeler. Çeşitli ve çok sayıda güven sinyali, ziyaretçinin markaya duyduğu güveni artırır.",
+      "betterDirection": null
     },
     {
       "code": "U10",
@@ -218,7 +236,9 @@
       ],
       "scopeRegions": [
         "FOOTER"
-      ]
+      ],
+      "description": "Gizlilik politikası, KVKK aydınlatma metni veya kullanım şartları gibi yasal bilgilere bir bağlantı üzerinden erişilip erişilemediğini kontrol eder. Bu şeffaflık, yasal uyum ve kullanıcı güveni açısından önemlidir.",
+      "betterDirection": "DESC"
     },
     {
       "code": "U11",
@@ -249,7 +269,9 @@
       "featureId": "form.required_field_count",
       "scopeRegions": [
         "FORM"
-      ]
+      ],
+      "description": "Dönüşüm formundaki zorunlu doldurulması gereken alan sayısını ölçer. Form ne kadar az zorunlu alan içerirse kullanıcıların formu tamamlama olasılığı o kadar yüksek olur.",
+      "betterDirection": "DESC"
     },
     {
       "code": "U12",
@@ -280,7 +302,9 @@
       "featureId": "consent.dialog.coverage",
       "scopeRegions": [
         "COOKIE"
-      ]
+      ],
+      "description": "Çerez izni penceresinin ilk açılan ekranın ne kadarını kapladığını yüzde olarak ölçer. Ekranı aşırı kaplayan izin pencereleri kullanıcı deneyimini olumsuz etkiler ve içeriğe erişimi engelleyebilir.",
+      "betterDirection": "DESC"
     },
     {
       "code": "U13",
@@ -296,7 +320,9 @@
       "scopeRegions": [
         "MENU",
         "FOOTER"
-      ]
+      ],
+      "description": "Sayfada görünür bir dil değiştirme seçeneğinin bulunup bulunmadığını kontrol eder. Bu özellik, farklı dillerdeki ziyaretçilerin siteyi rahatça kullanabilmesini sağlar.",
+      "betterDirection": null
     },
     {
       "code": "U14",
@@ -321,7 +347,9 @@
         "CONTENT",
         "CARD_LIST",
         "HERO"
-      ]
+      ],
+      "description": "Fiyat veya maliyet bilgisinin ne kadar net verildiğini değerlendirir. Kesin bir rakamla belirtilen fiyat, 'bilgi için iletişime geçin' gibi belirsiz yönlendirmelere göre ziyaretçiye çok daha fazla güven ve netlik sağlar.",
+      "betterDirection": "DESC"
     },
     {
       "code": "U15",
@@ -348,7 +376,9 @@
         "CALCULATOR",
         "CONTENT",
         "HERO"
-      ]
+      ],
+      "description": "Sayfadaki hesaplama veya sorgulama aracının erişilebilirlik düzeyini ölçer: doğrudan sayfada çalışıyor mu, ayrı sayfaya mı yönlendiriyor, yalnızca statik bilgi mi sunuluyor, yoksa hiç yok mu. Aracın doğrudan sayfada çalışması kullanım kolaylığı sağlar.",
+      "betterDirection": "DESC"
     },
     {
       "code": "U16",
@@ -362,7 +392,9 @@
         "yok"
       ],
       "defaultRegion": "CONTENT",
-      "featureId": "content.main.placement"
+      "featureId": "content.main.placement",
+      "description": "Sayfanın konusuyla ilgili asıl içeriğin (banner/slider hariç) nerede başladığını gösterir. Asıl içeriğin erken başlaması ziyaretçinin aradığı bilgiye hızla ulaşmasını sağlar.",
+      "betterDirection": "DESC"
     }
   ],
   "dictionaryVersion": 1

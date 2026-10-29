@@ -41,7 +41,9 @@
         "CARD_LIST",
         "HERO",
         "CALCULATOR"
-      ]
+      ],
+      "description": "Bu ölçüt, kredi faiz oranının sayfada ne kadar net gösterildiğini değerlendirir. Tam bir sayı mı var, yoksa 'şu oranlardan başlayan' gibi belirsiz bir ifade mi kullanılmış, ya da oranı görmek için başka bir yere mi yönlendiriliyorsunuz? Netlik arttıkça kullanıcı karşılaştırma yapabilir, bu yüzden somut rakam en değerlisidir.",
+      "betterDirection": "DESC"
     },
     {
       "code": "B02",
@@ -62,7 +64,9 @@
         "CARD_LIST",
         "HERO",
         "CALCULATOR"
-      ]
+      ],
+      "description": "Bu ölçüt, faiz oranı bilgisinin sayfanın neresinde yer aldığını, yani kullanıcının bunu görmek için ne kadar kaydırma yapması gerektiğini ölçer. Konum otomatik olarak tespit edilir; önemli olan bilginin ilk açılan ekranda mı yoksa sayfanın altında mı olduğudur.",
+      "betterDirection": null
     },
     {
       "code": "B03",
@@ -90,7 +94,9 @@
         "CALCULATOR",
         "CONTENT",
         "HERO"
-      ]
+      ],
+      "description": "Bu ölçüt, kullanıcının taksit tutarını öğrenmek için ne tür bir araç kullanabildiğini gösterir. Sayfa içine gömülü bir hesaplayıcı en pratik olanıdır, ayrı sayfaya yönlendirme veya sadece sabit bir tablo daha az kullanışlıdır, hiçbiri yoksa kullanıcı tahmin yürütmek zorunda kalır.",
+      "betterDirection": "DESC"
     },
     {
       "code": "B04",
@@ -113,7 +119,9 @@
         "CONTENT",
         "CARD_LIST",
         "CALCULATOR"
-      ]
+      ],
+      "description": "Bu ölçüt, kredinin toplam maliyetinin (yıllık maliyet oranı veya toplam geri ödeme tutarı) ne kadar somut belirtildiğini değerlendirir. Tam rakam verilmesi en şeffaf durumdur; belirsiz ifadeler veya başvuruya yönlendirme kullanıcının gerçek maliyeti önceden görmesini zorlaştırır.",
+      "betterDirection": "DESC"
     },
     {
       "code": "B05",
@@ -132,7 +140,9 @@
       "scopeRegions": [
         "CONTENT",
         "CARD_LIST"
-      ]
+      ],
+      "description": "Bu ölçüt, sayfada tahsis ücreti, dosya masrafı veya sigorta gibi en az bir ek maliyet kaleminin adının geçip geçmediğini kontrol eder. Tutarın belirtilmesi şart değildir, sadece böyle bir maliyetin varlığından haberdar edilmek önemlidir.",
+      "betterDirection": "DESC"
     },
     {
       "code": "B06",
@@ -152,7 +162,9 @@
         "CONTENT",
         "CARD_LIST",
         "CALCULATOR"
-      ]
+      ],
+      "description": "Bu ölçüt, kredinin azami tutarı ve vadesi hakkındaki bilginin ne kadar somut olduğunu değerlendirir. Net bir rakam ve vade verilmesi en faydalısıdır; aralık, koşullu ifade veya hesaplamaya yönlendirme kullanıcı için daha az netlik sağlar.",
+      "betterDirection": "DESC"
     },
     {
       "code": "B07",
@@ -173,7 +185,9 @@
       ],
       "scopeRegions": [
         "CONTENT"
-      ]
+      ],
+      "description": "Bu ölçüt, kredi başvurusu için gereken belge veya koşulların sayfada madde madde listelenip listelenmediğini kontrol eder. Genel bir cümleyle geçiştirme yeterli sayılmaz, kullanıcının önceden hazırlık yapabilmesi için açık bir liste gereklidir.",
+      "betterDirection": "DESC"
     },
     {
       "code": "B08",
@@ -193,7 +207,9 @@
         "CONTENT",
         "CARD_LIST",
         "HERO"
-      ]
+      ],
+      "description": "Bu ölçüt, başvurunun ne kadar sürede sonuçlanacağına dair verilen sürenin somutluğunu ölçer. 'X dakikada sonuç' gibi kesin bir ifade en güven verici olanıdır; belirsiz ifadeler veya doğrudan başvuruya yönlendirme kullanıcıyı bilgilendirmez.",
+      "betterDirection": "DESC"
     },
     {
       "code": "B09",
@@ -209,7 +225,9 @@
         "ulasilamadi"
       ],
       "defaultRegion": "CONTENT",
-      "featureId": "loan.application.depth"
+      "featureId": "loan.application.depth",
+      "description": "Bu ölçüt, kullanıcının kredi başvuru formunun ilk adımına kaç tıklamayla ulaşabildiğini ölçer. Az tıklama, başvuru sürecinin kolay ve hızlı olduğunu gösterir; mobil uygulamaya yönlendirilmek bu ölçüt kapsamında 'ulaşılamadı' olarak değerlendirilir.",
+      "betterDirection": "DESC"
     },
     {
       "code": "B10",
@@ -224,7 +242,9 @@
       "featureId": "loan.noncustomer_eligibility.disclosure",
       "scopeRegions": [
         "CONTENT"
-      ]
+      ],
+      "description": "Bu ölçüt, bankanın mevcut müşterisi olmayan kişilerin bu krediye başvurup başvuramayacağının sayfada açıkça belirtilip belirtilmediğini kontrol eder. Bu bilgi netleştirilmezse potansiyel müşteriler başvurup başvuramayacaklarını bilemez.",
+      "betterDirection": "DESC"
     },
     {
       "code": "B11",
@@ -239,7 +259,9 @@
       "featureId": "loan.early_repayment.disclosure",
       "scopeRegions": [
         "CONTENT"
-      ]
+      ],
+      "description": "Bu ölçüt, erken ödeme, erken kapama ücreti veya borç yapılandırma imkânına dair bilginin sayfada yer alıp almadığını kontrol eder. Bu bilgi, kullanıcının krediyi vadesinden önce kapatmak istediğinde karşılaşacağı koşulları önceden bilmesini sağlar.",
+      "betterDirection": "DESC"
     },
     {
       "code": "B12",
@@ -260,7 +282,9 @@
         "TRUST",
         "FOOTER",
         "CONTENT"
-      ]
+      ],
+      "description": "Bu ölçüt, sayfada kullanıcıya güven vermek için hangi tür sinyallerin kullanıldığını belirler: müşteri yorumları, sayısal iddialar (derecelendirme notu, müşteri sayısı gibi), sertifika/akreditasyon, basın ödülleri veya kurumsal/mevzuat referansları. Hangi türün daha etkili olduğu bağlama göre değiştiği için en iyi basamak belirlenmemiştir.",
+      "betterDirection": null
     },
     {
       "code": "B13",
@@ -281,7 +305,9 @@
       "scopeRegions": [
         "CALCULATOR",
         "CONTENT"
-      ]
+      ],
+      "description": "Bu ölçüt, kullanıcının resmi başvuru yapmadan önce kredi uygunluğunu veya kullanabileceği limiti öğrenebileceği bir aracın bulunup bulunmadığını ve bu aracın ne kadar erişilebilir olduğunu değerlendirir. Sayfaya gömülü bir sorgu aracı en kullanışlısıdır, hiç böyle bir imkân sunulmaması kullanıcıyı doğrudan başvuruya zorlar.",
+      "betterDirection": "DESC"
     },
     {
       "code": "B14",
@@ -300,7 +326,9 @@
       "scopeRegions": [
         "CONTENT",
         "FOOTER"
-      ]
+      ],
+      "description": "Bu ölçüt, mevzuatın gerektirdiği temsili örnek hesaplama veya yasal uyarı metninin sayfada bulunup bulunmadığını kontrol eder. Bu bilgi, kredi koşullarının yasal çerçevede şeffaf şekilde sunulmasını sağlar.",
+      "betterDirection": "DESC"
     }
   ],
   "dictionaryVersion": 1

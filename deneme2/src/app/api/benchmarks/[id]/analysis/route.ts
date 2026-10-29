@@ -1,9 +1,81 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient, type RegionType } from "@prisma/client";
+import { PrismaClient, type BetterDirection, type ObservationStatus, type RegionType } from "@prisma/client";
 import { distribution, MIN_DENOMINATOR_FOR_PERCENT } from "@/lib/measurement/patterns";
 
 const prisma = new PrismaClient();
 export const dynamic = "force-dynamic";
+
+/**
+ * Below this many comparably-measured peers, a percentile verdict is not
+ * shown at all - just the raw counts, same spirit as
+ * MIN_DENOMINATOR_FOR_PERCENT but a separate, slightly looser threshold
+ * because this gates a sentence ("better than most peers"), not a percentage.
+ */
+const MIN_PEERS_FOR_RATING = 5;
+
+/** Where this observation's value sits on its own criterion's ladder, worst
+ * at the end - the convention every catalogue in this project actually uses
+ * (see pattern-steps.ts). ABSENT always reads as the ladder's last rung,
+ * regardless of its exact label, so a criterion need not spell "yok" exactly. */
+function stepIndex(status: ObservationStatus, value: string | null, steps: string[]): number | null {
+  if (status === "ABSENT") return steps.length ? steps.length - 1 : null;
+  if (status === "PRESENT" && value) {
+    const i = steps.indexOf(value);
+    return i >= 0 ? i : null;
+  }
+  return null;
+}
+
+interface Rating {
+  comparableCount: number;
+  /** Peers with a BETTER value than this institution's. */
+  peersBetterCount: number;
+  /** Peers at the exact same rung. */
+  peersSameCount: number;
+  /** Peers this institution outranks. */
+  peersWorseCount: number;
+  /** Percentile rank with ties split evenly - 100 means better than every comparable peer. */
+  percentile: number;
+}
+
+/**
+ * A verdict, not just a count - but only when the dictionary has an actual
+ * reviewed opinion about direction (betterDirection) AND there are enough
+ * peers to say anything (MIN_PEERS_FOR_RATING). Otherwise null: the UI must
+ * fall back to a neutral "X of Y have this value" framing, never invent one.
+ */
+function computeRating(
+  own: { status: ObservationStatus; value: string | null },
+  peers: Array<{ status: ObservationStatus; value: string | null }>,
+  steps: string[],
+  betterDirection: BetterDirection | null,
+): Rating | null {
+  if (!betterDirection) return null;
+  const myIndex = stepIndex(own.status, own.value, steps);
+  if (myIndex === null) return null;
+
+  const peerIndexes = peers
+    .map((p) => stepIndex(p.status, p.value, steps))
+    .filter((i): i is number => i !== null);
+  if (peerIndexes.length < MIN_PEERS_FOR_RATING) return null;
+
+  const peerIsBetter = betterDirection === "DESC" ? (i: number) => i < myIndex : (i: number) => i > myIndex;
+  let peersBetterCount = 0;
+  let peersSameCount = 0;
+  for (const i of peerIndexes) {
+    if (i === myIndex) peersSameCount++;
+    else if (peerIsBetter(i)) peersBetterCount++;
+  }
+  const peersWorseCount = peerIndexes.length - peersBetterCount - peersSameCount;
+
+  return {
+    comparableCount: peerIndexes.length,
+    peersBetterCount,
+    peersSameCount,
+    peersWorseCount,
+    percentile: Math.round(((peersWorseCount + peersSameCount / 2) / peerIndexes.length) * 100),
+  };
+}
 
 /**
  * Everything the report needs for one capture: its regions, its observations
@@ -88,6 +160,8 @@ export async function GET(
   const items = benchmark.observations.map((o) => {
     const rows = peerObservations.filter((p) => p.criterionId === o.criterionId);
     const d = distribution(rows);
+    const steps = (o.criterion.steps as string[]) ?? [];
+    const rating = computeRating(o, rows, steps, o.criterion.betterDirection);
 
     const peers = rows
       .map((p) => {
@@ -118,8 +192,10 @@ export async function GET(
       featureId: o.criterion.featureId,
       question: o.criterion.question,
       rule: o.criterion.rule,
+      description: o.criterion.description,
+      betterDirection: o.criterion.betterDirection,
       pattern: o.criterion.pattern,
-      steps: (o.criterion.steps as string[]) ?? [],
+      steps,
       value: o.value,
       rawCount: o.rawCount,
       status: o.status,
@@ -146,6 +222,7 @@ export async function GET(
         },
       },
       peers,
+      rating,
     };
   });
 

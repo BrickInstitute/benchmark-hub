@@ -6,13 +6,11 @@
   "pageRole": "DECISION",
   "pageName": "Bölüm veya tıbbi hizmet sayfası",
   "conversionTarget": "Randevu talebi",
-
   "bindings": {
     "U14": "Muayene veya işlem ücreti",
     "U15": "Randevu uygunluk sorgulama",
     "U06": "Randevu talep formu"
   },
-
   "criteria": [
     {
       "code": "H01",
@@ -20,9 +18,20 @@
       "featureId": "appointment.booking.level",
       "question": "Randevu alma hangi düzeyde sunuluyor?",
       "rule": "gomulu = sayfada tarih/saat seçilip randevu tamamlanabiliyor; ayri_sayfa = 'Randevu Al' bağlantısı başka sayfaya gidiyor; statik = yalnızca telefonla randevu yazıyor; yok = hiçbiri.",
-      "steps": ["gomulu", "ayri_sayfa", "statik", "yok"],
+      "steps": [
+        "gomulu",
+        "ayri_sayfa",
+        "statik",
+        "yok"
+      ],
       "defaultRegion": "CALCULATOR",
-      "scopeRegions": ["CALCULATOR", "CONTENT", "HERO"]
+      "scopeRegions": [
+        "CALCULATOR",
+        "CONTENT",
+        "HERO"
+      ],
+      "description": "Bu ölçüt, hastanenin randevu alma işlemini web sitesinde ne kadar kolay sunduğunu gösterir. En iyi durum, kullanıcının siteden çıkmadan tarih ve saat seçerek randevusunu tamamlayabilmesidir; en kötü durum ise hiçbir randevu seçeneğinin bulunmamasıdır.",
+      "betterDirection": "DESC"
     },
     {
       "code": "H02",
@@ -30,10 +39,20 @@
       "featureId": "doctor.roster.access",
       "question": "Hekim kadrosuna veya profiline erişim var mı?",
       "rule": "Bu bölüme ait en az bir hekim adının veya profiline giden bağlantının sayfada bulunması.",
-      "requiredEvidence": ["Hekim adı veya 'Doktorlarımız' bağlantısı"],
-      "steps": ["var", "yok"],
+      "requiredEvidence": [
+        "Hekim adı veya 'Doktorlarımız' bağlantısı"
+      ],
+      "steps": [
+        "var",
+        "yok"
+      ],
       "defaultRegion": "CONTENT",
-      "scopeRegions": ["CONTENT", "CARD_LIST"]
+      "scopeRegions": [
+        "CONTENT",
+        "CARD_LIST"
+      ],
+      "description": "Bu ölçüt, sayfada hastanede çalışan hekimlerin isimlerine veya profillerine ulaşılıp ulaşılamadığını kontrol eder. Hastalar genellikle tedavi olacakları doktoru görmek ister, bu yüzden bu bilginin bulunması güven oluşturur.",
+      "betterDirection": "DESC"
     },
     {
       "code": "H03",
@@ -41,9 +60,20 @@
       "featureId": "insurance.coverage.specificity",
       "question": "Anlaşmalı kurum / sigorta bilgisi ne kadar somut?",
       "rule": "rakam = anlaşmalı sigorta şirketi adları listelenmiş; aralik = kategori bazlı (ör. 'özel sağlık sigortaları'); kosullu = 'anlaşmalı olabilir, danışınız'; yonlendirme = iletişime yönlendiriyor; yok = hiç geçmiyor.",
-      "steps": ["rakam", "aralik", "kosullu", "yonlendirme", "yok"],
+      "steps": [
+        "rakam",
+        "aralik",
+        "kosullu",
+        "yonlendirme",
+        "yok"
+      ],
       "defaultRegion": "CONTENT",
-      "scopeRegions": ["CONTENT", "TRUST"]
+      "scopeRegions": [
+        "CONTENT",
+        "TRUST"
+      ],
+      "description": "Bu ölçüt, hastanenin anlaşmalı olduğu sigorta şirketleri hakkında ne kadar net bilgi verdiğini ölçer. En iyi durum, anlaşmalı sigorta şirketlerinin isim isim listelenmesidir; en kötü durum ise bu bilgiye hiç yer verilmemesidir.",
+      "betterDirection": "DESC"
     },
     {
       "code": "H04",
@@ -52,9 +82,21 @@
       "featureId": "service.fee.specificity",
       "question": "Ücret bilgisi ne kadar somut gösteriliyor?",
       "rule": "rakam = tek ve kesin ücret; aralik = alt-üst sınır; kosullu = 'sigortaya göre değişir'; yonlendirme = ücret yok, iletişime/randevuya yönlendiriyor; yok = hiç geçmiyor.",
-      "steps": ["rakam", "aralik", "kosullu", "yonlendirme", "yok"],
+      "steps": [
+        "rakam",
+        "aralik",
+        "kosullu",
+        "yonlendirme",
+        "yok"
+      ],
       "defaultRegion": "CONTENT",
-      "scopeRegions": ["CONTENT", "CARD_LIST", "CALCULATOR"]
+      "scopeRegions": [
+        "CONTENT",
+        "CARD_LIST",
+        "CALCULATOR"
+      ],
+      "description": "Bu ölçüt, tedavi veya hizmet ücretlerinin sitede ne kadar açık paylaşıldığını değerlendirir. Net bir rakam verilmesi en şeffaf yaklaşımdır, bilgiye hiç yer verilmemesi ise en belirsiz durumdur.",
+      "betterDirection": "DESC"
     },
     {
       "code": "H05",
@@ -63,9 +105,21 @@
       "featureId": "trust.signal.types",
       "question": "Hangi güven sinyalleri kullanılmış?",
       "rule": "sertifika_akreditasyon = JCI/ISO gibi akreditasyon; sayisal_iddia = hasta/operasyon sayısı; basin_odul = ödül/derece; kurumsal_referans = mevzuat/denetim atfı; musteri_yorumu = hasta yorumu.",
-      "steps": ["musteri_yorumu", "sayisal_iddia", "sertifika_akreditasyon", "basin_odul", "kurumsal_referans"],
+      "steps": [
+        "musteri_yorumu",
+        "sayisal_iddia",
+        "sertifika_akreditasyon",
+        "basin_odul",
+        "kurumsal_referans"
+      ],
       "defaultRegion": "TRUST",
-      "scopeRegions": ["TRUST", "FOOTER", "CONTENT"]
+      "scopeRegions": [
+        "TRUST",
+        "FOOTER",
+        "CONTENT"
+      ],
+      "description": "Bu ölçüt, hastanenin ziyaretçilerde güven oluşturmak için hangi tür kanıtları kullandığını belirler; örneğin uluslararası akreditasyonlar, hasta sayıları, ödüller veya hasta yorumları gibi. Hangi güven sinyalinin daha etkili olduğu duruma göre değiştiği için tek bir en iyi basamak belirtilmemiştir.",
+      "betterDirection": null
     },
     {
       "code": "H06",
@@ -73,9 +127,16 @@
       "featureId": "procedure.preparation.disclosure",
       "question": "İşlem öncesi hazırlık bilgilendirmesi var mı?",
       "rule": "İşlem/muayene öncesi dikkat edilmesi gerekenlere dair en az bir madde veya bağlantı.",
-      "steps": ["var", "yok"],
+      "steps": [
+        "var",
+        "yok"
+      ],
       "defaultRegion": "CONTENT",
-      "scopeRegions": ["CONTENT"]
+      "scopeRegions": [
+        "CONTENT"
+      ],
+      "description": "Bu ölçüt, bir muayene veya tıbbi işlem öncesinde hastaların bilmesi gereken hazırlık bilgilerinin (örneğin aç kalma, belge getirme gibi) sitede yer alıp almadığını kontrol eder. Bu bilgi hastaların işleme daha hazırlıklı gelmesini sağlar.",
+      "betterDirection": "DESC"
     },
     {
       "code": "H07",
@@ -84,8 +145,16 @@
       "featureId": "appointment.depth",
       "question": "Randevu talebine kaç tıklama uzaklıkta?",
       "rule": "Hedef, randevu talep formunun ilk adımı. Yalnızca telefon numarası verilmesi 'ulasilamadi' sayılır (web kapsamı dışında).",
-      "steps": ["0", "1", "2", "3_arti", "ulasilamadi"],
-      "defaultRegion": "CONTENT"
+      "steps": [
+        "0",
+        "1",
+        "2",
+        "3_arti",
+        "ulasilamadi"
+      ],
+      "defaultRegion": "CONTENT",
+      "description": "Bu ölçüt, bir ziyaretçinin randevu talep formuna ulaşmak için kaç kez tıklaması gerektiğini ölçer. Tıklama sayısı ne kadar azsa, randevu alma süreci o kadar hızlı ve kullanıcı dostudur.",
+      "betterDirection": "DESC"
     },
     {
       "code": "H08",
@@ -93,10 +162,23 @@
       "featureId": "emergency.contact.placement",
       "question": "Acil / 7-24 iletişim bilgisi sayfanın neresinde?",
       "rule": "'Acil', '7/24' veya benzeri bir ibareyle birlikte verilen telefon/bağlantı. Genel iletişim bilgisinden (U07) ayrıdır.",
-      "requiredEvidence": ["'Acil' veya '7/24' ibaresiyle birlikte telefon/bağlantı"],
-      "steps": ["ilk_ekran", "ilk_kaydirma", "sayfa_alti", "yok"],
+      "requiredEvidence": [
+        "'Acil' veya '7/24' ibaresiyle birlikte telefon/bağlantı"
+      ],
+      "steps": [
+        "ilk_ekran",
+        "ilk_kaydirma",
+        "sayfa_alti",
+        "yok"
+      ],
       "defaultRegion": "HERO",
-      "scopeRegions": ["HERO", "MENU", "FOOTER"]
+      "scopeRegions": [
+        "HERO",
+        "MENU",
+        "FOOTER"
+      ],
+      "description": "Bu ölçüt, acil durumlar için 7/24 iletişim bilgisinin sayfanın hangi bölümünde yer aldığını inceler. Bu bilginin sayfa açılır açılmaz görünmesi, acil durumdaki kullanıcılar için hayati önem taşır.",
+      "betterDirection": "DESC"
     }
   ]
 }

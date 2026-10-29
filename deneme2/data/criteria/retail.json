@@ -6,13 +6,11 @@
   "pageRole": "DECISION",
   "pageName": "Ürün veya kampanya sayfası",
   "conversionTarget": "Sepete ekleme veya mağaza bulma",
-
   "bindings": {
     "U14": "Ürün fiyatı",
     "U15": "Mağaza / stok bulucu",
     "U06": "Sepete ekleme veya sipariş akışı"
   },
-
   "criteria": [
     {
       "code": "M01",
@@ -21,9 +19,21 @@
       "featureId": "product.price.specificity",
       "question": "Fiyat bilgisi ne kadar somut gösteriliyor?",
       "rule": "rakam = tek ve kesin fiyat; aralik = indirimli/normal fiyat aralığı; kosullu = 'üyelere özel fiyat'; yonlendirme = fiyat yok, mağazaya/sepete yönlendiriyor; yok = hiç geçmiyor.",
-      "steps": ["rakam", "aralik", "kosullu", "yonlendirme", "yok"],
+      "steps": [
+        "rakam",
+        "aralik",
+        "kosullu",
+        "yonlendirme",
+        "yok"
+      ],
       "defaultRegion": "CARD_LIST",
-      "scopeRegions": ["CARD_LIST", "CONTENT", "HERO"]
+      "scopeRegions": [
+        "CARD_LIST",
+        "CONTENT",
+        "HERO"
+      ],
+      "description": "Bu ölçüt, ürün fiyatının sitede ne kadar net ve somut gösterildiğini değerlendirir. Tam bir rakam görmek mi, yoksa belirsiz bir aralık, üyelere özel koşul veya hiç fiyat bilgisi olmaması mı söz konusu, bunu ölçer. Net bir fiyat görmek kullanıcı güvenini ve karar verme hızını artırır.",
+      "betterDirection": "DESC"
     },
     {
       "code": "M02",
@@ -31,9 +41,17 @@
       "featureId": "stock.availability.disclosure",
       "question": "Stok veya mağazada bulunurluk bilgisi var mı?",
       "rule": "'Stokta var', 'tükendi' veya mağaza bazlı stok durumu gösteren en az bir ifade.",
-      "steps": ["var", "yok"],
+      "steps": [
+        "var",
+        "yok"
+      ],
       "defaultRegion": "CARD_LIST",
-      "scopeRegions": ["CARD_LIST", "CONTENT"]
+      "scopeRegions": [
+        "CARD_LIST",
+        "CONTENT"
+      ],
+      "description": "Bu ölçüt, ürünün stokta olup olmadığı veya hangi mağazada bulunabileceği bilgisinin sitede yer alıp almadığını kontrol eder. Stok bilgisi, kullanıcıların boşa zaman harcamadan alışveriş yapmasını sağlar.",
+      "betterDirection": "DESC"
     },
     {
       "code": "M03",
@@ -42,9 +60,20 @@
       "featureId": "store.locator.level",
       "question": "Mağaza bulucu hangi düzeyde?",
       "rule": "gomulu = sayfada konum girilip en yakın mağaza listeleniyor; ayri_sayfa = 'Mağazalarımız' bağlantısı ayrı sayfaya gidiyor; statik = yalnızca şehir listesi yazılı; yok = hiçbiri.",
-      "steps": ["gomulu", "ayri_sayfa", "statik", "yok"],
+      "steps": [
+        "gomulu",
+        "ayri_sayfa",
+        "statik",
+        "yok"
+      ],
       "defaultRegion": "CALCULATOR",
-      "scopeRegions": ["CALCULATOR", "MENU", "CONTENT"]
+      "scopeRegions": [
+        "CALCULATOR",
+        "MENU",
+        "CONTENT"
+      ],
+      "description": "Bu ölçüt, kullanıcının en yakın mağazayı bulma deneyiminin ne kadar gelişmiş olduğunu değerlendirir. Sayfada konum girip en yakın mağazayı anında görmek en kullanışlı yöntemdir; sadece şehir listesi yazılı olması ya da böyle bir özelliğin hiç bulunmaması ise kullanıcı için daha zahmetlidir.",
+      "betterDirection": "DESC"
     },
     {
       "code": "M04",
@@ -53,9 +82,21 @@
       "question": "Kampanya koşulu ne kadar somut?",
       "rule": "rakam = kesin tarih ve koşul; aralik = tarih aralığı; kosullu = 'stoklarla sınırlıdır'; yonlendirme = koşul detayına bağlantı veriyor; yok = kampanya koşulu hiç yazılmamış.",
       "naRule": "Sayfada kampanya yok.",
-      "steps": ["rakam", "aralik", "kosullu", "yonlendirme", "yok"],
+      "steps": [
+        "rakam",
+        "aralik",
+        "kosullu",
+        "yonlendirme",
+        "yok"
+      ],
       "defaultRegion": "HERO",
-      "scopeRegions": ["HERO", "CARD_LIST", "CONTENT"]
+      "scopeRegions": [
+        "HERO",
+        "CARD_LIST",
+        "CONTENT"
+      ],
+      "description": "Bu ölçüt, bir kampanyaya katılım koşullarının (tarih, şart vb.) ne kadar açık ve net belirtildiğini ölçer. Kesin tarih ve koşul görmek, belirsiz ifadelere veya hiç bilgi olmamasına göre kullanıcıyı çok daha iyi bilgilendirir.",
+      "betterDirection": "DESC"
     },
     {
       "code": "M05",
@@ -64,8 +105,16 @@
       "featureId": "cart.depth",
       "question": "Sepete eklemeye kaç tıklama uzaklıkta?",
       "rule": "Hedef, bir ürünü sepete ekleme eylemi. Yalnızca mağazaya yönlendirme 'ulasilamadi' sayılır.",
-      "steps": ["0", "1", "2", "3_arti", "ulasilamadi"],
-      "defaultRegion": "CARD_LIST"
+      "steps": [
+        "0",
+        "1",
+        "2",
+        "3_arti",
+        "ulasilamadi"
+      ],
+      "defaultRegion": "CARD_LIST",
+      "description": "Bu ölçüt, bir ürünü sepete eklemek için kaç tıklama gerektiğini ölçer. Sepete ekleme adımı ne kadar azsa, alışveriş deneyimi o kadar hızlı ve kolay olur; bazı durumlarda bu işlem hiç yapılamayıp kullanıcı sadece mağazaya yönlendirilebilir.",
+      "betterDirection": "DESC"
     },
     {
       "code": "M06",
@@ -73,9 +122,20 @@
       "featureId": "delivery.option.specificity",
       "question": "Teslimat seçeneği ve süresi ne kadar somut?",
       "rule": "rakam = kesin süre (ör. '2 saatte teslim'); aralik = süre aralığı; kosullu = 'bölgeye göre değişir'; yonlendirme = teslimat bilgisi yok, sepete/ödemeye yönlendiriyor; yok = hiç geçmiyor.",
-      "steps": ["rakam", "aralik", "kosullu", "yonlendirme", "yok"],
+      "steps": [
+        "rakam",
+        "aralik",
+        "kosullu",
+        "yonlendirme",
+        "yok"
+      ],
       "defaultRegion": "CONTENT",
-      "scopeRegions": ["CONTENT", "FOOTER"]
+      "scopeRegions": [
+        "CONTENT",
+        "FOOTER"
+      ],
+      "description": "Bu ölçüt, teslimat seçeneklerinin ve sürelerinin sitede ne kadar net belirtildiğini değerlendirir. Kesin bir teslimat süresi görmek, belirsiz aralıklara, koşullu ifadelere veya hiç bilgi olmamasına kıyasla kullanıcıya çok daha fazla güven ve netlik sağlar.",
+      "betterDirection": "DESC"
     },
     {
       "code": "M07",
@@ -84,9 +144,21 @@
       "featureId": "trust.signal.types",
       "question": "Hangi güven sinyalleri kullanılmış?",
       "rule": "musteri_yorumu = ürün puanı/yorumu; sayisal_iddia = satış/üye sayısı; sertifika_akreditasyon = gıda/kalite sertifikası; basin_odul = ödül; kurumsal_referans = tedarikçi/marka referansı.",
-      "steps": ["musteri_yorumu", "sayisal_iddia", "sertifika_akreditasyon", "basin_odul", "kurumsal_referans"],
+      "steps": [
+        "musteri_yorumu",
+        "sayisal_iddia",
+        "sertifika_akreditasyon",
+        "basin_odul",
+        "kurumsal_referans"
+      ],
       "defaultRegion": "TRUST",
-      "scopeRegions": ["TRUST", "CARD_LIST", "FOOTER"]
+      "scopeRegions": [
+        "TRUST",
+        "CARD_LIST",
+        "FOOTER"
+      ],
+      "description": "Bu ölçüt, sitenin kullanıcıya güven vermek için hangi tür sinyalleri kullandığını belirler: müşteri yorumları, satış/üye sayıları gibi rakamsal iddialar, kalite sertifikaları, ödüller veya marka/tedarikçi referansları. Bu sinyaller, markaya duyulan güveni ve satın alma kararını etkiler.",
+      "betterDirection": null
     },
     {
       "code": "M08",
@@ -94,9 +166,16 @@
       "featureId": "return_policy.access",
       "question": "İade ve değişim bilgisine erişim var mı?",
       "rule": "İade/değişim koşullarına giden bir bağlantı veya kısa bir özet metni.",
-      "steps": ["var", "yok"],
+      "steps": [
+        "var",
+        "yok"
+      ],
       "defaultRegion": "FOOTER",
-      "scopeRegions": ["FOOTER"]
+      "scopeRegions": [
+        "FOOTER"
+      ],
+      "description": "Bu ölçüt, iade ve değişim koşullarına ilişkin bilginin sitede kolayca bulunup bulunmadığını kontrol eder. Bu bilgiye kolay erişim, kullanıcının alışveriş yaparken kendini daha güvende hissetmesini sağlar.",
+      "betterDirection": "DESC"
     }
   ]
 }

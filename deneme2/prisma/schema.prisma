@@ -186,6 +186,16 @@ enum CriterionLayer {
   SECTOR
 }
 
+/// Which end of the step ladder is the better practice, if either is. Many
+/// criteria have no universal answer (where a CTA sits "should" be is a
+/// design choice, not a quality signal) - those stay null and the UI must
+/// not invent a verdict for them. This is reviewed, dictionary-level editorial
+/// judgment, never a per-observation model guess.
+enum BetterDirection {
+  ASC
+  DESC
+}
+
 enum ObservationStatus {
   PRESENT
   ABSENT
@@ -283,6 +293,13 @@ model Criterion {
   rule     String  @db.Text
   /// When this criterion does not apply at all (-> NOT_APPLICABLE).
   naRule   String? @db.Text
+  /// What this feature is and why it is worth comparing at all - shown to the
+  /// end user alongside the raw status, because "Var" on its own answers
+  /// nothing. Dictionary-level editorial content, written once per criterion,
+  /// never generated per observation.
+  description     String?          @db.Text
+  /// See BetterDirection. Null means: show the comparison, not a verdict.
+  betterDirection BetterDirection?
 
   /// Ordered rungs for ordinal patterns, e.g. ["rakam","aralik","kosullu",...]
   steps          Json @default("[]")

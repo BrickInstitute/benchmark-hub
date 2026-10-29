@@ -44,22 +44,10 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { MeasurementPattern, PageRole, RegionType } from "@prisma/client";
 import { materializeSectorCatalogue, universalCatalogueSummary } from "./catalogue";
+import { PATTERN_STEPS } from "./pattern-steps";
 import type { TargetIdentity } from "./peer-discovery";
 
 const MODEL = process.env.AI_MODEL || "claude-sonnet-5";
-
-/** Canonical per-pattern vocabulary. Never supplied by the model - see header. */
-const PATTERN_STEPS: Partial<Record<MeasurementPattern, string[]>> = {
-  P1: ["var", "yok"],
-  P3: ["rakam", "aralik", "kosullu", "yonlendirme", "yok"],
-  P4: ["gomulu", "ayri_sayfa", "statik", "yok"],
-  P7: ["musteri_yorumu", "sayisal_iddia", "sertifika_akreditasyon", "basin_odul", "kurumsal_referans"],
-  // P2 and P5 are included so a model may still propose a criterion that
-  // USES these patterns (placement / depth of something sector-specific);
-  // their steps are fixed to match every other P2/P5 criterion in the system.
-  P2: ["ilk_ekran", "ilk_kaydirma", "sayfa_alti", "yok"],
-  P5: ["0", "1", "2", "3_arti", "ulasilamadi"],
-};
 
 /** P6 is reserved for universal density counting (menu items, CTAs, form
  * fields, ...) which is already sector-agnostic - a model is not asked for it. */
@@ -80,6 +68,8 @@ interface RawProposedCriterion {
   question?: string;
   rule?: string;
   naRule?: string;
+  description?: string;
+  bestStep?: string;
   requiredEvidence?: string[];
   exclusions?: string[];
   scopeRegions?: string[];
@@ -145,8 +135,8 @@ function validateCriteria(
     // code+sectorId), which is far worse than renumbering.
     const code = `${prefix}${String(counter).padStart(2, "0")}`;
 
-    if (!isNonEmptyString(c.question) || !isNonEmptyString(c.rule)) {
-      rejected.push({ code: c.code, reason: "question veya rule eksik" });
+    if (!isNonEmptyString(c.question) || !isNonEmptyString(c.rule) || !isNonEmptyString(c.description)) {
+      rejected.push({ code: c.code, reason: "question, rule veya description eksik" });
       continue;
     }
     const pattern = (c.pattern ?? "").toUpperCase() as MeasurementPattern;
@@ -171,6 +161,12 @@ function validateCriteria(
     const scopeRegions = (c.scopeRegions ?? [])
       .map((r) => r.toUpperCase())
       .filter((r): r is RegionType => VALID_REGIONS.includes(r as RegionType));
+    // Direction is derived from a concrete value the model named, never
+    // trusted as an abstract ASC/DESC claim - see pattern-steps.ts header and
+    // scripts/backfill-descriptions.ts for why that was tried and backfired.
+    const bestStep = c.bestStep?.trim();
+    const betterDirection: "ASC" | "DESC" | null =
+      bestStep === steps[0] ? "DESC" : bestStep === steps[steps.length - 1] ? "ASC" : null;
 
     accepted.push({
       code,
@@ -178,6 +174,8 @@ function validateCriteria(
       question: c.question.trim(),
       rule: c.rule.trim(),
       naRule: isNonEmptyString(c.naRule) ? c.naRule.trim() : null,
+      description: c.description.trim(),
+      betterDirection,
       steps,
       supersedesCode: isNonEmptyString(c.supersedesUniversalCode)
         ? c.supersedesUniversalCode.trim().toUpperCase()
@@ -244,6 +242,16 @@ export async function generateSectorCatalogue(
                   question: { type: "string", description: "Tek cümlelik soru, ör. 'Kargo ücreti ne kadar somut gösteriliyor?'" },
                   rule: { type: "string", description: "Basamakların nasıl ayırt edileceğine dair değerlendirme kuralı" },
                   naRule: { type: "string", description: "Bu ölçütün geçerli olmadığı durum, varsa" },
+                  description: {
+                    type: "string",
+                    description:
+                      "Son kullanıcıya gösterilecek 2-3 cümlelik açıklama: bu özellik nedir, kullanıcı/müşteri için neden önemlidir. 'Var' tek başına hiçbir şey anlatmaz - bunu okuyan biri özelliği hiç bilmeden anlamalı.",
+                  },
+                  bestStep: {
+                    type: "string",
+                    description:
+                      "Eğer bu ölçütün kullandığı kalıbın basamaklarından biri GERÇEKTEN evrensel olarak en iyi uygulamaysa (yukarıdaki basamak listelerinden), o basamağın TAM metnini buraya yaz (listeden birebir kopyala, ör. 'var' veya '0'). Hangisinin daha iyi olduğu bağlama göre değişiyorsa (çoğu P2 konum ölçütü gibi - bir CTA'nın ilk ekranda olması iyi ama bir çerez bildiriminin olması gerekmeyebilir) bu alanı BOŞ bırak. Basamağın dizideki konumuna göre TAHMİN etme, yalnızca değerin kendisini yaz - yön yazılım tarafından hesaplanacak.",
+                  },
                   requiredEvidence: { type: "array", items: { type: "string" }, description: "Sayılması için sayfada görünmesi gereken şeyler" },
                   exclusions: { type: "array", items: { type: "string" }, description: "Sayılmayacak olanlar" },
                   defaultRegion: { type: "string", enum: VALID_REGIONS, description: "Bu ölçütün genelde bulunduğu bölüm türü" },
@@ -254,7 +262,7 @@ export async function generateSectorCatalogue(
                     description: "Eğer bu ölçüt parametrik bir evrensel ölçütle (U06/U09/U14/U15) AYNI hedefi ölçüyorsa o kodu yaz, aksi halde boş bırak",
                   },
                 },
-                required: ["pattern", "question", "rule"],
+                required: ["pattern", "question", "rule", "description"],
               },
             },
           },
@@ -279,6 +287,12 @@ Zaten var olan EVRENSEL ölçütler (bunları tekrar önerme, yalnızca "paramet
 olanlardan hedefi bu sektöre bağlayabilirsin):
 ${universalList}
 
+Kullanacağın her kalıbın basamakları SIRAYLA (yazılım tarafından sabit,
+sen değiştiremezsin):
+${Object.entries(PATTERN_STEPS)
+  .map(([p, steps]) => `${p}: [${steps!.join(", ")}]`)
+  .join("\n")}
+
 Kurallar:
 - Yalnızca bu sektöre ÖZGÜ, evrensel listede karşılığı olmayan ölçütler öner.
 - "steps"/basamak önerme; bunu yazılım kalıba göre otomatik atıyor.
@@ -286,7 +300,11 @@ Kurallar:
 - Her ölçüt somut ve kanıtla doğrulanabilir olmalı: "requiredEvidence" alanına
   sayfada GÖRÜLEBİLECEK bir şey yaz, soyut bir kavram değil.
 - Emin olmadığın bir ölçütü eklemektense eklemmemeyi tercih et; az ama
-  doğrulanabilir ölçüt, çok ama belirsiz ölçütten iyidir.`,
+  doğrulanabilir ölçüt, çok ama belirsiz ölçütten iyidir.
+- Her ölçüt için "description" yaz: son kullanıcı bu özelliği hiç bilmiyor
+  olabilir, "Var" tek kelimesi onun için hiçbir şey ifade etmez.
+- "bestStep"i yalnızca gerçekten evrensel bir doğru cevap varsa doldur, aksi
+  halde boş bırak - yanlış bir "daha iyi" yönü, kullanıcıyı yanlış yönlendirir.`,
       },
     ],
   });

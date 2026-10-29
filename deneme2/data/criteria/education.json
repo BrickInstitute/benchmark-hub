@@ -6,13 +6,11 @@
   "pageRole": "DECISION",
   "pageName": "Program veya bölüm sayfası",
   "conversionTarget": "Başvuru veya ön kayıt",
-
   "bindings": {
     "U14": "Program / eğitim ücreti",
     "U15": "Ücret veya burs hesaplama aracı",
     "U06": "Başvuru / ön kayıt formu"
   },
-
   "criteria": [
     {
       "code": "E01",
@@ -21,9 +19,21 @@
       "featureId": "tuition.fee.specificity",
       "question": "Ücret bilgisi ne kadar somut gösteriliyor?",
       "rule": "rakam = tek ve kesin ücret; aralik = alt-üst sınır veya taksitli seçenek; kosullu = 'burs durumuna göre değişir'; yonlendirme = ücret yok, başvuruya/iletişime yönlendiriyor; yok = hiç geçmiyor.",
-      "steps": ["rakam", "aralik", "kosullu", "yonlendirme", "yok"],
+      "steps": [
+        "rakam",
+        "aralik",
+        "kosullu",
+        "yonlendirme",
+        "yok"
+      ],
       "defaultRegion": "CONTENT",
-      "scopeRegions": ["CONTENT", "CARD_LIST", "CALCULATOR"]
+      "scopeRegions": [
+        "CONTENT",
+        "CARD_LIST",
+        "CALCULATOR"
+      ],
+      "description": "Bu ölçüt, kurumun eğitim ücretini web sitesinde ne kadar net paylaştığını gösterir. Tek ve kesin bir rakam en şeffaf durumdur; buna karşılık ücretin hiç belirtilmeyip sadece iletişime yönlendirilmesi veya hiç bahsedilmemesi, veliler için belirsizlik yaratır. Netlik arttıkça kurumun şeffaflığı ve güvenilirliği daha olumlu algılanır.",
+      "betterDirection": "DESC"
     },
     {
       "code": "E02",
@@ -31,9 +41,19 @@
       "featureId": "application.deadline.specificity",
       "question": "Başvuru takvimi ne kadar somut?",
       "rule": "rakam = kesin tarih (ör. '15 Haziran'); aralik = tarih aralığı; kosullu = 'dönem başına göre değişir'; yonlendirme = 'yakında açıklanacak' veya takvim yok; yok = hiç geçmiyor.",
-      "steps": ["rakam", "aralik", "kosullu", "yonlendirme", "yok"],
+      "steps": [
+        "rakam",
+        "aralik",
+        "kosullu",
+        "yonlendirme",
+        "yok"
+      ],
       "defaultRegion": "CONTENT",
-      "scopeRegions": ["CONTENT"]
+      "scopeRegions": [
+        "CONTENT"
+      ],
+      "description": "Bu ölçüt, başvuru/kayıt tarihlerinin sitede ne kadar açık belirtildiğini ölçer. Kesin bir tarih verilmesi velilerin planlama yapmasını kolaylaştırırken, 'yakında açıklanacak' gibi ifadeler veya hiç bilgi verilmemesi belirsizlik oluşturur. Tarih netliği arttıkça kullanıcı deneyimi ve güven artar.",
+      "betterDirection": "DESC"
     },
     {
       "code": "E03",
@@ -41,11 +61,22 @@
       "featureId": "curriculum.list.access",
       "question": "Müfredat veya ders listesi var mı?",
       "rule": "Programa ait ders adlarının madde madde listelenmesi veya müfredata giden bağlantı.",
-      "requiredEvidence": ["Ders adı listesi veya 'Müfredat' bağlantısı"],
-      "exclusions": ["Tek cümlelik genel program tanıtımı liste sayılmaz"],
-      "steps": ["var", "yok"],
+      "requiredEvidence": [
+        "Ders adı listesi veya 'Müfredat' bağlantısı"
+      ],
+      "exclusions": [
+        "Tek cümlelik genel program tanıtımı liste sayılmaz"
+      ],
+      "steps": [
+        "var",
+        "yok"
+      ],
       "defaultRegion": "CONTENT",
-      "scopeRegions": ["CONTENT"]
+      "scopeRegions": [
+        "CONTENT"
+      ],
+      "description": "Bu ölçüt, kurumun sunduğu programlara ait ders veya müfredat listesinin sitede bulunup bulunmadığını kontrol eder. Böyle bir liste veya müfredata bağlantı olması, velilerin eğitim içeriği hakkında bilgi edinmesini sağlar ve kurumun şeffaflığını gösterir.",
+      "betterDirection": "DESC"
     },
     {
       "code": "E04",
@@ -53,9 +84,19 @@
       "featureId": "admission.criteria.specificity",
       "question": "Kabul koşulu / kontenjan bilgisi ne kadar somut?",
       "rule": "rakam = kesin kontenjan sayısı veya puan; aralik = aralık; kosullu = 'başarı durumuna göre değerlendirilir'; yonlendirme = koşul yok, başvuruya yönlendiriyor; yok.",
-      "steps": ["rakam", "aralik", "kosullu", "yonlendirme", "yok"],
+      "steps": [
+        "rakam",
+        "aralik",
+        "kosullu",
+        "yonlendirme",
+        "yok"
+      ],
       "defaultRegion": "CONTENT",
-      "scopeRegions": ["CONTENT"]
+      "scopeRegions": [
+        "CONTENT"
+      ],
+      "description": "Bu ölçüt, kabul koşulları veya kontenjan bilgisinin ne kadar somut şekilde paylaşıldığını değerlendirir. Kesin bir sayı veya puan verilmesi en açık bilgilendirmeyi sağlarken, bu bilgilerin hiç verilmemesi veya sadece başvuruya yönlendirme yapılması belirsizlik yaratır.",
+      "betterDirection": "DESC"
     },
     {
       "code": "E05",
@@ -64,9 +105,21 @@
       "featureId": "trust.signal.types",
       "question": "Hangi güven sinyalleri kullanılmış?",
       "rule": "sayisal_iddia = mezun yerleşme/iş bulma oranı; sertifika_akreditasyon = akreditasyon kurumu; basin_odul = sıralama/ödül; kurumsal_referans = işbirliği yapılan kurum; musteri_yorumu = öğrenci/veli yorumu.",
-      "steps": ["musteri_yorumu", "sayisal_iddia", "sertifika_akreditasyon", "basin_odul", "kurumsal_referans"],
+      "steps": [
+        "musteri_yorumu",
+        "sayisal_iddia",
+        "sertifika_akreditasyon",
+        "basin_odul",
+        "kurumsal_referans"
+      ],
       "defaultRegion": "TRUST",
-      "scopeRegions": ["TRUST", "FOOTER", "CONTENT"]
+      "scopeRegions": [
+        "TRUST",
+        "FOOTER",
+        "CONTENT"
+      ],
+      "description": "Bu ölçüt, sitede ziyaretçilerin güvenini kazanmak için hangi tür kanıtların kullanıldığını belirler. Mezun başarı oranları gibi sayısal veriler, akreditasyon belgeleri, basın haberleri/ödüller, kurumsal işbirlikleri ve öğrenci/veli yorumları bu kanıtlar arasında yer alır. Hangi sinyalin en etkili olduğu bağlama göre değişebileceğinden tek bir en iyi basamak belirlenmemiştir.",
+      "betterDirection": null
     },
     {
       "code": "E06",
@@ -74,9 +127,20 @@
       "featureId": "application.tool.level",
       "question": "Başvuru aracı hangi düzeyde?",
       "rule": "gomulu = sayfada form doldurup başvuru tamamlanabiliyor; ayri_sayfa = başvuru formuna bağlantı; statik = yalnızca e-posta/telefon yazılı; yok = hiçbiri.",
-      "steps": ["gomulu", "ayri_sayfa", "statik", "yok"],
+      "steps": [
+        "gomulu",
+        "ayri_sayfa",
+        "statik",
+        "yok"
+      ],
       "defaultRegion": "CALCULATOR",
-      "scopeRegions": ["CALCULATOR", "CONTENT", "HERO"]
+      "scopeRegions": [
+        "CALCULATOR",
+        "CONTENT",
+        "HERO"
+      ],
+      "description": "Bu ölçüt, kullanıcıların başvuru işlemini ne kadar kolay gerçekleştirebildiğini gösterir. Sayfada doğrudan doldurulabilen bir form en pratik seçenekken, yalnızca e-posta veya telefon bilgisi verilmesi ya da hiçbir başvuru aracının olmaması kullanıcı için ek efor gerektirir ve başvuru oranını düşürebilir.",
+      "betterDirection": "DESC"
     },
     {
       "code": "E07",
@@ -85,8 +149,16 @@
       "featureId": "application.depth",
       "question": "Başvurmaya kaç tıklama uzaklıkta?",
       "rule": "Hedef, başvuru/ön kayıt formunun ilk adımı. Yalnızca iletişim bilgisi verilmesi 'ulasilamadi' sayılır.",
-      "steps": ["0", "1", "2", "3_arti", "ulasilamadi"],
-      "defaultRegion": "CONTENT"
+      "steps": [
+        "0",
+        "1",
+        "2",
+        "3_arti",
+        "ulasilamadi"
+      ],
+      "defaultRegion": "CONTENT",
+      "description": "Bu ölçüt, bir ziyaretçinin ana sayfadan başvuru formunun ilk adımına ulaşmak için kaç kez tıklaması gerektiğini ölçer. Daha az tıklama, kullanıcı deneyimini kolaylaştırır ve başvuru sürecini hızlandırır; hiç ulaşılamaması ise ciddi bir kullanılabilirlik sorunudur.",
+      "betterDirection": "DESC"
     },
     {
       "code": "E08",
@@ -94,9 +166,17 @@
       "featureId": "scholarship.disclosure",
       "question": "Burs / indirim bilgisi var mı?",
       "rule": "Burs türü, oranı veya başvuru koşuluna dair en az bir ifade.",
-      "steps": ["var", "yok"],
+      "steps": [
+        "var",
+        "yok"
+      ],
       "defaultRegion": "CONTENT",
-      "scopeRegions": ["CONTENT", "CARD_LIST"]
+      "scopeRegions": [
+        "CONTENT",
+        "CARD_LIST"
+      ],
+      "description": "Bu ölçüt, sitede burs veya indirim fırsatlarına dair herhangi bir bilginin (türü, oranı veya koşulu) bulunup bulunmadığını kontrol eder. Böyle bir bilginin varlığı, ailelerin maliyet avantajlarını değerlendirmesine yardımcı olur ve kurumu daha cazip kılabilir.",
+      "betterDirection": "DESC"
     }
   ]
 }

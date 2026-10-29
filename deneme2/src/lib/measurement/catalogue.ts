@@ -26,6 +26,7 @@
 import universalJson from "../../../data/criteria/universal.json";
 import {
   PrismaClient,
+  type BetterDirection,
   type MeasurementPattern,
   type PageRole,
   type RegionType,
@@ -39,6 +40,12 @@ export interface CriterionInput {
   question: string;
   rule: string;
   naRule?: string | null;
+  /// What this feature is and why it is worth comparing - shown to the end
+  /// user next to the raw status.
+  description?: string | null;
+  /// Which end of `steps` is the better practice, if either is. Omit when
+  /// there is no universal answer.
+  betterDirection?: BetterDirection | null;
   steps: string[];
   bucketLimits?: Record<string, [number, number | null]>;
   parametric?: boolean;
@@ -80,6 +87,8 @@ async function upsertCriterion(
     question: c.question,
     rule: c.rule,
     naRule: c.naRule ?? null,
+    description: c.description ?? null,
+    betterDirection: c.betterDirection ?? null,
     steps: c.steps,
     bucketLimits: c.bucketLimits ?? undefined,
     parametric: c.parametric ?? false,
