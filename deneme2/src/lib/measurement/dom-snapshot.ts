@@ -160,6 +160,10 @@ export function collectDomSnapshot(): DomSnapshot {
   /** Height of the top strip, used only as a coarse hint. */
   const TOP_STRIP = Math.min(180, Math.round(vh * 0.2));
 
+  // Set by the top-row menu-clustering branch below, read once regions[]/
+  // claimed/addRegion exist further down - see the note there.
+  let topRowMenuElements: InteractiveElement[] | null = null;
+
   function buildSelector(el: Element): string {
     const parts: string[] = [];
     let cur: Element | null = el;
@@ -516,6 +520,10 @@ export function collectDomSnapshot(): DomSnapshot {
         e.container = "menu";
         e.primaryCta = false;
       }
+      // regions[]/claimed/addRegion are declared further down this function
+      // and are not ready yet here (const TDZ) - the row is exported via this
+      // outer variable instead and turned into a region later, once they are.
+      topRowMenuElements = bestRow;
     }
   }
 
@@ -606,6 +614,40 @@ export function collectDomSnapshot(): DomSnapshot {
   if (!regions.some((r) => r.type === "MENU")) {
     const nav = document.querySelector('nav, [role="navigation"], header');
     if (nav) addRegion(nav, "MENU", "Ana menü", "semantic nav/header");
+  }
+  // Top-row clustering (docs: no semantic <nav> on the page, e.g. a menu
+  // built entirely from plain divs) measures the menu correctly via
+  // topRowMenuElements but never gets a region from either branch above -
+  // menu.itemCount is right yet nothing is left to highlight. Re-query the
+  // first clustered item and walk up until an ancestor's box contains every
+  // item in the row (InteractiveElement only carries a selector, not a live
+  // element, so this cannot be done any earlier than here).
+  if (!regions.some((r) => r.type === "MENU") && topRowMenuElements) {
+    const firstEl = document.querySelector(topRowMenuElements[0]!.selector);
+    if (firstEl) {
+      const minX = Math.min(...topRowMenuElements.map((e) => e.box.x));
+      const minY = Math.min(...topRowMenuElements.map((e) => e.box.y));
+      const maxX = Math.max(...topRowMenuElements.map((e) => e.box.x + e.box.w));
+      const maxY = Math.max(...topRowMenuElements.map((e) => e.box.y + e.box.h));
+      let ancestor: Element | null = firstEl;
+      let guard = 0;
+      while (ancestor && guard < 8) {
+        const box = toBox(ancestor.getBoundingClientRect());
+        if (
+          box.x <= minX + 2 &&
+          box.y <= minY + 2 &&
+          box.x + box.w >= maxX - 2 &&
+          box.y + box.h >= maxY - 2
+        ) {
+          break;
+        }
+        ancestor = ancestor.parentElement;
+        guard++;
+      }
+      if (ancestor) {
+        addRegion(ancestor, "MENU", "Ana menü", "top-row clustering (common ancestor)");
+      }
+    }
   }
 
   // Footer: semantic first, then the widest tall block in the bottom fifth.

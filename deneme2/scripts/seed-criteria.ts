@@ -4,7 +4,9 @@
  * The catalogue is DATA, not code. Adding a sector means writing a JSON file
  * with ~15 rows and running this - no TypeScript changes.
  *
- *   npx tsx scripts/seed-criteria.ts
+ *   npx tsx scripts/seed-criteria.ts [data/criteria/<sector>.json]
+ *
+ * Defaults to data/criteria/banking.json when no path is given.
  */
 import { readFile } from "node:fs/promises";
 import { PrismaClient, type MeasurementPattern, type RegionType } from "@prisma/client";
@@ -76,12 +78,11 @@ async function upsertCriterion(c: CriterionJson, sectorId: string | null) {
 }
 
 async function main() {
+  const sectorFile = process.argv[2] ?? "data/criteria/banking.json";
   const universal: UniversalJson = JSON.parse(
     await readFile("data/criteria/universal.json", "utf8"),
   );
-  const sector: SectorJson = JSON.parse(
-    await readFile("data/criteria/banking.json", "utf8"),
-  );
+  const sector: SectorJson = JSON.parse(await readFile(sectorFile, "utf8"));
 
   dictionaryVersion = universal.dictionaryVersion ?? 1;
 

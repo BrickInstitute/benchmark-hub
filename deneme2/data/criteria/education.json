@@ -1,0 +1,102 @@
+{
+  "sectorSlug": "ozel-egitim",
+  "sectorName": "Özel Eğitim Kurumu",
+  "country": "TR",
+  "version": "1",
+  "pageRole": "DECISION",
+  "pageName": "Program veya bölüm sayfası",
+  "conversionTarget": "Başvuru veya ön kayıt",
+
+  "bindings": {
+    "U14": "Program / eğitim ücreti",
+    "U15": "Ücret veya burs hesaplama aracı",
+    "U06": "Başvuru / ön kayıt formu"
+  },
+
+  "criteria": [
+    {
+      "code": "E01",
+      "pattern": "P3",
+      "supersedesCode": "U14",
+      "featureId": "tuition.fee.specificity",
+      "question": "Ücret bilgisi ne kadar somut gösteriliyor?",
+      "rule": "rakam = tek ve kesin ücret; aralik = alt-üst sınır veya taksitli seçenek; kosullu = 'burs durumuna göre değişir'; yonlendirme = ücret yok, başvuruya/iletişime yönlendiriyor; yok = hiç geçmiyor.",
+      "steps": ["rakam", "aralik", "kosullu", "yonlendirme", "yok"],
+      "defaultRegion": "CONTENT",
+      "scopeRegions": ["CONTENT", "CARD_LIST", "CALCULATOR"]
+    },
+    {
+      "code": "E02",
+      "pattern": "P3",
+      "featureId": "application.deadline.specificity",
+      "question": "Başvuru takvimi ne kadar somut?",
+      "rule": "rakam = kesin tarih (ör. '15 Haziran'); aralik = tarih aralığı; kosullu = 'dönem başına göre değişir'; yonlendirme = 'yakında açıklanacak' veya takvim yok; yok = hiç geçmiyor.",
+      "steps": ["rakam", "aralik", "kosullu", "yonlendirme", "yok"],
+      "defaultRegion": "CONTENT",
+      "scopeRegions": ["CONTENT"]
+    },
+    {
+      "code": "E03",
+      "pattern": "P1",
+      "featureId": "curriculum.list.access",
+      "question": "Müfredat veya ders listesi var mı?",
+      "rule": "Programa ait ders adlarının madde madde listelenmesi veya müfredata giden bağlantı.",
+      "requiredEvidence": ["Ders adı listesi veya 'Müfredat' bağlantısı"],
+      "exclusions": ["Tek cümlelik genel program tanıtımı liste sayılmaz"],
+      "steps": ["var", "yok"],
+      "defaultRegion": "CONTENT",
+      "scopeRegions": ["CONTENT"]
+    },
+    {
+      "code": "E04",
+      "pattern": "P3",
+      "featureId": "admission.criteria.specificity",
+      "question": "Kabul koşulu / kontenjan bilgisi ne kadar somut?",
+      "rule": "rakam = kesin kontenjan sayısı veya puan; aralik = aralık; kosullu = 'başarı durumuna göre değerlendirilir'; yonlendirme = koşul yok, başvuruya yönlendiriyor; yok.",
+      "steps": ["rakam", "aralik", "kosullu", "yonlendirme", "yok"],
+      "defaultRegion": "CONTENT",
+      "scopeRegions": ["CONTENT"]
+    },
+    {
+      "code": "E05",
+      "pattern": "P7",
+      "supersedesCode": "U09",
+      "featureId": "trust.signal.types",
+      "question": "Hangi güven sinyalleri kullanılmış?",
+      "rule": "sayisal_iddia = mezun yerleşme/iş bulma oranı; sertifika_akreditasyon = akreditasyon kurumu; basin_odul = sıralama/ödül; kurumsal_referans = işbirliği yapılan kurum; musteri_yorumu = öğrenci/veli yorumu.",
+      "steps": ["musteri_yorumu", "sayisal_iddia", "sertifika_akreditasyon", "basin_odul", "kurumsal_referans"],
+      "defaultRegion": "TRUST",
+      "scopeRegions": ["TRUST", "FOOTER", "CONTENT"]
+    },
+    {
+      "code": "E06",
+      "pattern": "P4",
+      "featureId": "application.tool.level",
+      "question": "Başvuru aracı hangi düzeyde?",
+      "rule": "gomulu = sayfada form doldurup başvuru tamamlanabiliyor; ayri_sayfa = başvuru formuna bağlantı; statik = yalnızca e-posta/telefon yazılı; yok = hiçbiri.",
+      "steps": ["gomulu", "ayri_sayfa", "statik", "yok"],
+      "defaultRegion": "CALCULATOR",
+      "scopeRegions": ["CALCULATOR", "CONTENT", "HERO"]
+    },
+    {
+      "code": "E07",
+      "pattern": "P5",
+      "supersedesCode": "U06",
+      "featureId": "application.depth",
+      "question": "Başvurmaya kaç tıklama uzaklıkta?",
+      "rule": "Hedef, başvuru/ön kayıt formunun ilk adımı. Yalnızca iletişim bilgisi verilmesi 'ulasilamadi' sayılır.",
+      "steps": ["0", "1", "2", "3_arti", "ulasilamadi"],
+      "defaultRegion": "CONTENT"
+    },
+    {
+      "code": "E08",
+      "pattern": "P1",
+      "featureId": "scholarship.disclosure",
+      "question": "Burs / indirim bilgisi var mı?",
+      "rule": "Burs türü, oranı veya başvuru koşuluna dair en az bir ifade.",
+      "steps": ["var", "yok"],
+      "defaultRegion": "CONTENT",
+      "scopeRegions": ["CONTENT", "CARD_LIST"]
+    }
+  ]
+}

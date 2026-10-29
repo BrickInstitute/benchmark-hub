@@ -1,0 +1,102 @@
+{
+  "sectorSlug": "ozel-hastane",
+  "sectorName": "Özel Hastane",
+  "country": "TR",
+  "version": "1",
+  "pageRole": "DECISION",
+  "pageName": "Bölüm veya tıbbi hizmet sayfası",
+  "conversionTarget": "Randevu talebi",
+
+  "bindings": {
+    "U14": "Muayene veya işlem ücreti",
+    "U15": "Randevu uygunluk sorgulama",
+    "U06": "Randevu talep formu"
+  },
+
+  "criteria": [
+    {
+      "code": "H01",
+      "pattern": "P4",
+      "featureId": "appointment.booking.level",
+      "question": "Randevu alma hangi düzeyde sunuluyor?",
+      "rule": "gomulu = sayfada tarih/saat seçilip randevu tamamlanabiliyor; ayri_sayfa = 'Randevu Al' bağlantısı başka sayfaya gidiyor; statik = yalnızca telefonla randevu yazıyor; yok = hiçbiri.",
+      "steps": ["gomulu", "ayri_sayfa", "statik", "yok"],
+      "defaultRegion": "CALCULATOR",
+      "scopeRegions": ["CALCULATOR", "CONTENT", "HERO"]
+    },
+    {
+      "code": "H02",
+      "pattern": "P1",
+      "featureId": "doctor.roster.access",
+      "question": "Hekim kadrosuna veya profiline erişim var mı?",
+      "rule": "Bu bölüme ait en az bir hekim adının veya profiline giden bağlantının sayfada bulunması.",
+      "requiredEvidence": ["Hekim adı veya 'Doktorlarımız' bağlantısı"],
+      "steps": ["var", "yok"],
+      "defaultRegion": "CONTENT",
+      "scopeRegions": ["CONTENT", "CARD_LIST"]
+    },
+    {
+      "code": "H03",
+      "pattern": "P3",
+      "featureId": "insurance.coverage.specificity",
+      "question": "Anlaşmalı kurum / sigorta bilgisi ne kadar somut?",
+      "rule": "rakam = anlaşmalı sigorta şirketi adları listelenmiş; aralik = kategori bazlı (ör. 'özel sağlık sigortaları'); kosullu = 'anlaşmalı olabilir, danışınız'; yonlendirme = iletişime yönlendiriyor; yok = hiç geçmiyor.",
+      "steps": ["rakam", "aralik", "kosullu", "yonlendirme", "yok"],
+      "defaultRegion": "CONTENT",
+      "scopeRegions": ["CONTENT", "TRUST"]
+    },
+    {
+      "code": "H04",
+      "pattern": "P3",
+      "supersedesCode": "U14",
+      "featureId": "service.fee.specificity",
+      "question": "Ücret bilgisi ne kadar somut gösteriliyor?",
+      "rule": "rakam = tek ve kesin ücret; aralik = alt-üst sınır; kosullu = 'sigortaya göre değişir'; yonlendirme = ücret yok, iletişime/randevuya yönlendiriyor; yok = hiç geçmiyor.",
+      "steps": ["rakam", "aralik", "kosullu", "yonlendirme", "yok"],
+      "defaultRegion": "CONTENT",
+      "scopeRegions": ["CONTENT", "CARD_LIST", "CALCULATOR"]
+    },
+    {
+      "code": "H05",
+      "pattern": "P7",
+      "supersedesCode": "U09",
+      "featureId": "trust.signal.types",
+      "question": "Hangi güven sinyalleri kullanılmış?",
+      "rule": "sertifika_akreditasyon = JCI/ISO gibi akreditasyon; sayisal_iddia = hasta/operasyon sayısı; basin_odul = ödül/derece; kurumsal_referans = mevzuat/denetim atfı; musteri_yorumu = hasta yorumu.",
+      "steps": ["musteri_yorumu", "sayisal_iddia", "sertifika_akreditasyon", "basin_odul", "kurumsal_referans"],
+      "defaultRegion": "TRUST",
+      "scopeRegions": ["TRUST", "FOOTER", "CONTENT"]
+    },
+    {
+      "code": "H06",
+      "pattern": "P1",
+      "featureId": "procedure.preparation.disclosure",
+      "question": "İşlem öncesi hazırlık bilgilendirmesi var mı?",
+      "rule": "İşlem/muayene öncesi dikkat edilmesi gerekenlere dair en az bir madde veya bağlantı.",
+      "steps": ["var", "yok"],
+      "defaultRegion": "CONTENT",
+      "scopeRegions": ["CONTENT"]
+    },
+    {
+      "code": "H07",
+      "pattern": "P5",
+      "supersedesCode": "U06",
+      "featureId": "appointment.depth",
+      "question": "Randevu talebine kaç tıklama uzaklıkta?",
+      "rule": "Hedef, randevu talep formunun ilk adımı. Yalnızca telefon numarası verilmesi 'ulasilamadi' sayılır (web kapsamı dışında).",
+      "steps": ["0", "1", "2", "3_arti", "ulasilamadi"],
+      "defaultRegion": "CONTENT"
+    },
+    {
+      "code": "H08",
+      "pattern": "P2",
+      "featureId": "emergency.contact.placement",
+      "question": "Acil / 7-24 iletişim bilgisi sayfanın neresinde?",
+      "rule": "'Acil', '7/24' veya benzeri bir ibareyle birlikte verilen telefon/bağlantı. Genel iletişim bilgisinden (U07) ayrıdır.",
+      "requiredEvidence": ["'Acil' veya '7/24' ibaresiyle birlikte telefon/bağlantı"],
+      "steps": ["ilk_ekran", "ilk_kaydirma", "sayfa_alti", "yok"],
+      "defaultRegion": "HERO",
+      "scopeRegions": ["HERO", "MENU", "FOOTER"]
+    }
+  ]
+}

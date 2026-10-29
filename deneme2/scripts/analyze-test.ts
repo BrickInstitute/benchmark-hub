@@ -1,16 +1,17 @@
 /**
  * End-to-end analysis run.
  *
- *   npx tsx scripts/analyze-test.ts <url> <institution> [--deterministic]
+ *   npx tsx scripts/analyze-test.ts <url> <institution> [sectorSlug] [--deterministic]
  *
- * Writes a Benchmark, its Regions, Observations and Evidence to the database.
+ * sectorSlug defaults to "bankacilik". Writes a Benchmark, its Regions,
+ * Observations and Evidence to the database.
  */
 import { analyze, analyzePrisma } from "../src/lib/measurement/analyze";
 
 async function main() {
   const args = process.argv.slice(2);
   const deterministicOnly = args.includes("--deterministic");
-  const [url, institution] = args.filter((a) => !a.startsWith("--"));
+  const [url, institution, sectorSlug] = args.filter((a) => !a.startsWith("--"));
 
   if (!url || !institution) {
     console.error("Usage: npx tsx scripts/analyze-test.ts <url> <institution> [--deterministic]");
@@ -21,7 +22,7 @@ async function main() {
     url,
     viewport: "DESKTOP",
     institution,
-    sectorSlug: "bankacilik",
+    sectorSlug: sectorSlug ?? "bankacilik",
     deterministicOnly,
   });
 
