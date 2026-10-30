@@ -44,3 +44,6 @@ next-env.d.ts
 # IDE
 .vscode/
 .idea/
+
+# Kanıtlı rapor yerel verisi (rakip görüntüleri — commit edilmez, docs/07)
+kanitli-veri/

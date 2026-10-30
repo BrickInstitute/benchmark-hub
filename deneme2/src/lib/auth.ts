@@ -87,6 +87,9 @@ export function isPublicPath(pathname: string): boolean {
   if (pathname === "/api/health") return true;
   if (pathname === "/login") return true;
   if (pathname === "/api/auth/login") return true;
+  // Kanıtlı rapor yayın paketi: oturum değil KANITLI_YUKLEME_ANAHTARI ister;
+  // denetim uçtadır (src/app/api/kanitli/yukle/route.ts).
+  if (pathname === "/api/kanitli/yukle") return true;
   if (pathname.startsWith("/_next/")) return true;
   if (pathname === "/favicon.ico") return true;
   return false;
