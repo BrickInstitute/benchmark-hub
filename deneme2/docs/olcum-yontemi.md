@@ -201,3 +201,13 @@ yanlış yön, hiç yön olmamasından kötüdür - bu yüzden `betterDirection`
 5 karşılaştırılabilir muadil VE sözlükte incelenmiş bir yön olmadan hiçbir
 zaman bir yüzdelik dilim üretmez - `null` döner, UI de bunu "yargı yok" olarak
 gösterir, asla uydurma bir ortalama değil.
+
+## Projeler
+
+Elle düzenlenebilen site listesiyle yürüyen benchmark çalışmaları ve bunlara
+eklenen açık sorular (hero, modüller, değer önerileri) `docs/projeler.md`
+dosyasında anlatılır. Oradaki sayfa analizi bu dosyadaki kurallara uyar: model
+alıntılar, yazılım doğrular, doğrulanamayan hiçbir şey sayılmaz. Bir farkı
+var: sayfa analizinde `ABSENT` yoktur. Bir modülün bulunamaması sayfada
+olmadığını kanıtlamaz, bu yüzden sayılar "en az N sitede görüldü" diye
+raporlanır.

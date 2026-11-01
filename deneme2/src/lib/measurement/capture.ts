@@ -171,7 +171,14 @@ export async function capturePage(request: CaptureRequest): Promise<CaptureResul
   let browser: Browser | null = null;
   try {
     const { chromium } = await import("playwright");
-    browser = await chromium.launch({ headless: true });
+    // CHROMIUM_EXECUTABLE_PATH: only for machines whose preinstalled Chromium
+    // does not match this Playwright version. Unset in the Docker image.
+    browser = await chromium.launch({
+      headless: true,
+      ...(process.env.CHROMIUM_EXECUTABLE_PATH
+        ? { executablePath: process.env.CHROMIUM_EXECUTABLE_PATH }
+        : {}),
+    });
     const context = await browser.newContext({
       userAgent: USER_AGENT,
       viewport: vp,

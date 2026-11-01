@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Benchmark {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   title       String
   description String?
   sourceUrl   String?
@@ -25,9 +25,9 @@ model Benchmark {
   dominantColors Json?
   typography     Json?
   layoutType     String?
-  htmlContent    String?  @db.Text
+  htmlContent    String? @db.Text
 
-  category   Category @relation(fields: [categoryId], references: [id])
+  category   Category         @relation(fields: [categoryId], references: [id])
   categoryId String
   tags       TagOnBenchmark[]
 
@@ -35,14 +35,14 @@ model Benchmark {
 
   // ---- Measurement layer (evidence-based analysis) ----
   // A Benchmark is the analysed subject: one captured page in one viewport.
-  viewport       Viewport      @default(DESKTOP)
-  captureStatus  CaptureStatus @default(SUCCESS)
+  viewport         Viewport      @default(DESKTOP)
+  captureStatus    CaptureStatus @default(SUCCESS)
   /// Quality gate verdict. A capture that fails the gate can never enter a
   /// cohort, and every observation derived from it is UNKNOWN.
-  qualityPassed  Boolean       @default(false)
-  qualityReport  Json?
+  qualityPassed    Boolean       @default(false)
+  qualityReport    Json?
   /// Path to the stored DOM snapshot (text nodes + boxes + interactive elements).
-  domSnapshotPath String?
+  domSnapshotPath  String?
   /// Fingerprint of on-screen text. Used instead of an image hash to decide
   /// whether the page actually changed - carousels make pixel hashes useless.
   contentSignature String?
@@ -50,20 +50,25 @@ model Benchmark {
 
   /// Which institution this capture belongs to. Needed so a cohort can keep
   /// one capture per institution.
-  institution    String?
-  pageRole       PageRole? @default(DECISION)
-  sector         Sector?   @relation(fields: [sectorId], references: [id])
-  sectorId       String?
+  institution String?
+  pageRole    PageRole? @default(DECISION)
+  sector      Sector?   @relation(fields: [sectorId], references: [id])
+  sectorId    String?
 
-  regions      Region[]
-  observations Observation[]
-  cohorts      CohortMember[]
+  regions           Region[]
+  observations      Observation[]
+  cohorts           CohortMember[]
   featureCandidates FeatureCandidate[]
+
+  /// Project targets whose latest run produced this capture (see Project).
+  projectTargets ProjectTarget[]
+  /// Descriptive analysis: hero, modules, value propositions (see PageAnalysis).
+  pageAnalysis   PageAnalysis?
 
   status BenchmarkStatus @default(ACTIVE)
 
-  isUploaded    Boolean      @default(false)
-  sourceHash    String?      @unique // For duplicate detection (hash of sourceUrl or image)
+  isUploaded Boolean @default(false)
+  sourceHash String? @unique // For duplicate detection (hash of sourceUrl or image)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -250,11 +255,12 @@ model Sector {
   country String       @default("TR")
   state   PublishState @default(DRAFT)
 
-  criteria   Criterion[]
-  packages   CriteriaPackage[]
-  cohorts    Cohort[]
-  benchmarks Benchmark[]
+  criteria          Criterion[]
+  packages          CriteriaPackage[]
+  cohorts           Cohort[]
+  benchmarks        Benchmark[]
   featureCandidates FeatureCandidate[]
+  projects          Project[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -276,23 +282,23 @@ model Criterion {
   /// Bumped when the meaning of the feature changes. Observations carry the
   /// version they were made under, so a redefinition does not silently
   /// reinterpret old records.
-  dictionaryVersion Int     @default(1)
+  dictionaryVersion Int          @default(1)
   /// What has to be visible for this to count. Narrative, used in the prompt
   /// and by human labellers, so both follow the same rule.
-  requiredEvidence  Json    @default("[]")
+  requiredEvidence  Json         @default("[]")
   /// What must NOT be counted, e.g. "a link to a calculator is not a calculator".
-  exclusions        Json    @default("[]")
+  exclusions        Json         @default("[]")
   /// Region types this criterion may draw evidence from. Empty means the whole
   /// page. A loan-rate criterion scoped to the loan section cannot be satisfied
   /// by a deposit rate elsewhere on the page.
   scopeRegions      RegionType[] @default([])
 
-  question String
+  question        String
   /// The rule a human labeller follows. A criterion whose rule cannot be
   /// written down does not belong in the catalogue.
-  rule     String  @db.Text
+  rule            String           @db.Text
   /// When this criterion does not apply at all (-> NOT_APPLICABLE).
-  naRule   String? @db.Text
+  naRule          String?          @db.Text
   /// What this feature is and why it is worth comparing at all - shown to the
   /// end user alongside the raw status, because "Var" on its own answers
   /// nothing. Dictionary-level editorial content, written once per criterion,
@@ -302,11 +308,11 @@ model Criterion {
   betterDirection BetterDirection?
 
   /// Ordered rungs for ordinal patterns, e.g. ["rakam","aralik","kosullu",...]
-  steps          Json @default("[]")
+  steps          Json        @default("[]")
   /// Bucket thresholds for P6, e.g. {"low":[0,4],"mid":[5,8],"high":[9,null]}
   bucketLimits   Json?
   /// A universal criterion whose target object comes from the sector package.
-  parametric     Boolean @default(false)
+  parametric     Boolean     @default(false)
   /// When a sector criterion measures the same target as a universal one, the
   /// sector code wins and only ONE observation is written. Otherwise the same
   /// fact is counted twice and the distribution breaks.
@@ -385,10 +391,10 @@ model Region {
   h Int
 
   /// CSS selector the box came from - makes the box re-verifiable.
-  selector   String?
-  source     RegionSource @default(DOM)
-  lowConfidence Boolean   @default(false)
-  order      Int          @default(0)
+  selector      String?
+  source        RegionSource @default(DOM)
+  lowConfidence Boolean      @default(false)
+  order         Int          @default(0)
 
   benchmark   Benchmark @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)
   benchmarkId String
@@ -412,38 +418,38 @@ model Observation {
   /// Raw count for P6, kept alongside the bucket.
   rawCount   Int?
 
-  status ObservationStatus
+  status               ObservationStatus
   /// How the evidence text was matched. A NONE here is the system's health
   /// signal and is tracked on the dashboard.
-  domMatch DomMatch @default(NONE)
+  domMatch             DomMatch            @default(NONE)
   /// How many repeat runs agreed. Disagreement forces UNKNOWN.
-  repeatAgreement Int @default(1)
+  repeatAgreement      Int                 @default(1)
   /// Set when a deterministic ABSENT still needs the model to confirm on the
   /// screenshot. Such an observation is not published.
-  awaitingConfirmation Boolean @default(false)
+  awaitingConfirmation Boolean             @default(false)
   /// How this was observed. A calculator seen in a screenshot is VISUAL; the
   /// same calculator proven to recompute on input would be INTERACTION. The
   /// distinction stops "it looks like a calculator" from being reported as
   /// "the calculator works".
-  modality ObservationModality @default(DOM)
+  modality             ObservationModality @default(DOM)
   /// Only true when behaviour was actually exercised, never when inferred.
-  interactionVerified Boolean @default(false)
+  interactionVerified  Boolean             @default(false)
   /// Feature dictionary version in force when this was recorded.
-  dictionaryVersion Int @default(1)
+  dictionaryVersion    Int                 @default(1)
   /// Why it is UNKNOWN or NOT_APPLICABLE - shown to the user verbatim.
-  note String? @db.Text
+  note                 String?             @db.Text
 
   reviewStatus ReviewStatus @default(PENDING)
   /// Raw model response, kept for audit even when not published.
   modelClaim   Json?
 
-  benchmark   Benchmark @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)
+  benchmark   Benchmark       @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)
   benchmarkId String
-  criterion   Criterion @relation(fields: [criterionId], references: [id])
+  criterion   Criterion       @relation(fields: [criterionId], references: [id])
   criterionId String
   package     CriteriaPackage @relation(fields: [packageId], references: [id])
   packageId   String
-  region      Region?   @relation(fields: [regionId], references: [id], onDelete: SetNull)
+  region      Region?         @relation(fields: [regionId], references: [id], onDelete: SetNull)
   regionId    String?
 
   evidence Evidence[]
@@ -460,7 +466,7 @@ model Evidence {
   id String @id @default(cuid())
 
   /// The text as it appears in the DOM - never the folded search form.
-  text     String @db.Text
+  text     String         @db.Text
   selector String?
   source   EvidenceSource @default(MODEL_QUOTE)
 
@@ -469,7 +475,7 @@ model Evidence {
   w Int?
   h Int?
 
-  verified Boolean @default(false)
+  verified  Boolean @default(false)
   /// More than one place matched, so the box is not certain. Criteria that
   /// measure placement must not accept ambiguous evidence.
   ambiguous Boolean @default(false)
@@ -485,15 +491,15 @@ model Evidence {
 /// The comparison set: sector + page role + viewport + country. This is the
 /// denominator. One institution contributes at most one capture.
 model Cohort {
-  id       String   @id @default(cuid())
+  id       String       @id @default(cuid())
   pageRole PageRole
   viewport Viewport
-  country  String   @default("TR")
-  version  String   @default("v1")
+  country  String       @default("TR")
+  version  String       @default("v1")
   state    PublishState @default(DRAFT)
 
-  sector   Sector @relation(fields: [sectorId], references: [id], onDelete: Cascade)
-  sectorId String
+  sector    Sector           @relation(fields: [sectorId], references: [id], onDelete: Cascade)
+  sectorId  String
   package   CriteriaPackage? @relation(fields: [packageId], references: [id])
   packageId String?
 
@@ -522,7 +528,6 @@ model CohortMember {
   @@index([benchmarkId])
 }
 
-
 /// Something the model noticed that the dictionary does not cover yet.
 ///
 /// Never silently dropped and never silently added: an unreviewed candidate
@@ -530,9 +535,9 @@ model CohortMember {
 /// captures must be RE-ANALYSED for it - they cannot be assumed ABSENT,
 /// because nobody ever looked.
 model FeatureCandidate {
-  id          String  @id @default(cuid())
-  proposedId  String
-  description String  @db.Text
+  id           String  @id @default(cuid())
+  proposedId   String
+  description  String  @db.Text
   evidenceText String? @db.Text
 
   benchmark   Benchmark? @relation(fields: [benchmarkId], references: [id], onDelete: SetNull)
@@ -548,4 +553,219 @@ model FeatureCandidate {
 
   @@unique([proposedId, sectorId])
   @@index([reviewStatus])
+}
+
+// ============================================================================
+// PROJECTS
+//
+// A project is a named benchmark study: "credit card landing pages of Turkish
+// banks", "loan application screens". It owns a curated URL list and runs
+// every URL on that list through the same pipeline. Full write-up:
+// docs/projeler.md.
+//
+// The list is the user's, not the model's. The model only SUGGESTS
+// institutions; the software resolves each suggestion to a real page; the user
+// adds, removes, excludes and edits. Nothing is analysed until the user runs it.
+// ============================================================================
+
+enum TargetSource {
+  /// Suggested by the model from the project brief.
+  AI_SUGGESTED
+  /// Added by a user.
+  MANUAL
+}
+
+/// Finding the actual page to analyse on an institution's site.
+enum ResolveState {
+  PENDING
+  RESOLVING
+  RESOLVED
+  FAILED
+}
+
+enum TargetRunState {
+  IDLE
+  QUEUED
+  CAPTURING
+  ANALYZING
+  DONE
+  FAILED
+}
+
+enum JobState {
+  IDLE
+  RUNNING
+  DONE
+  FAILED
+}
+
+model Project {
+  id    String @id @default(cuid())
+  name  String
+  slug  String @unique
+  /// What the user asked for, in their own words. The model reads this to
+  /// suggest institutions and to work out the page topic.
+  brief String @db.Text
+
+  /// What page is being compared ("kredi kartı başvurusu"). Set by the user or
+  /// derived from the brief on first discovery. Used to find the equivalent
+  /// page on each site.
+  pageTopic String?
+  pageRole  PageRole?
+  viewport  Viewport  @default(DESKTOP)
+  country   String    @default("TR")
+
+  /// Decides which criteria package the run uses. Null until the user picks
+  /// one or the first discovery derives it from the brief.
+  sector   Sector? @relation(fields: [sectorId], references: [id])
+  sectorId String?
+
+  /// How many institutions discovery asks the model for.
+  targetCount Int @default(15)
+
+  /// One background job per project at a time ("discover" | "resolve" |
+  /// "run"). State is persisted so the UI can poll it; the job itself lives in
+  /// the server process (src/lib/projects/jobs.ts).
+  jobKind       String?
+  jobState      JobState  @default(IDLE)
+  jobNote       String?   @db.Text
+  jobStartedAt  DateTime?
+  jobFinishedAt DateTime?
+
+  createdBy String?
+
+  targets ProjectTarget[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// One institution on a project's list.
+model ProjectTarget {
+  id String @id @default(cuid())
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+
+  institution String
+  /// Registrable host without "www.". Unique per project: one institution
+  /// contributes one page, otherwise five pages of the same bank would count
+  /// as five banks in every percentage.
+  domain      String
+  /// The exact page to analyse. Null until resolved.
+  url         String?
+
+  source    TargetSource
+  /// Excluded targets stay on the list (so a rejected suggestion does not come
+  /// back on the next discovery) but are never run and never counted.
+  included  Boolean      @default(true)
+  /// Why the model suggested this institution.
+  rationale String?      @db.Text
+
+  resolveState ResolveState @default(PENDING)
+  /// Why resolution failed, or how the page was found.
+  resolveNote  String?      @db.Text
+  /// "navigation" | "sitemap" | "homepage" | "manual"
+  foundVia     String?
+
+  runState  TargetRunState @default(IDLE)
+  runNote   String?        @db.Text
+  lastRunAt DateTime?
+
+  /// Latest capture of this target. Older captures stay in the database as
+  /// history; only this one is counted in the project summary.
+  benchmark   Benchmark? @relation(fields: [benchmarkId], references: [id], onDelete: SetNull)
+  benchmarkId String?
+
+  order Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([projectId, domain])
+  @@index([projectId, order])
+}
+
+// ============================================================================
+// DESCRIPTIVE PAGE ANALYSIS
+//
+// The criteria layer asks closed questions ("is there a calculator, at which
+// level"). A benchmark study also needs open ones: what does the hero say,
+// which modules does the page use and in what order, which value propositions
+// are made. Same discipline as the rest of the pipeline: the model quotes,
+// software locates the quote in the DOM and computes boxes and placement; a
+// quote that cannot be found is kept for audit (verified = false) and never
+// counted.
+// ============================================================================
+
+enum PageAnalysisStatus {
+  DONE
+  SKIPPED
+  FAILED
+}
+
+enum PageElementKind {
+  HERO_HEADLINE
+  HERO_SUBHEADLINE
+  HERO_CTA
+  MODULE
+  VALUE_PROP
+}
+
+model PageAnalysis {
+  id String @id @default(cuid())
+
+  benchmark   Benchmark @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)
+  benchmarkId String    @unique
+
+  status PageAnalysisStatus
+  note   String?            @db.Text
+
+  /// What kind of visual the hero uses (vocabulary: HERO_VISUALS). Read off
+  /// the screenshot (VISUAL modality) - there is no DOM text to verify it
+  /// against, so the UI labels it as a visual reading.
+  heroVisual String?
+
+  model        String?
+  inputTokens  Int?
+  outputTokens Int?
+  /// Raw model response, kept for audit.
+  rawResponse  Json?
+
+  elements PageElement[]
+
+  createdAt DateTime @default(now())
+}
+
+model PageElement {
+  id String @id @default(cuid())
+
+  analysis   PageAnalysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  analysisId String
+
+  kind     PageElementKind
+  /// MODULE: a MODULE_TYPES key. VALUE_PROP: a VALUE_THEMES key.
+  category String?
+  /// Verified: the text as it appears in the DOM. Unverified: the model quote.
+  text     String          @db.Text
+  /// MODULE only: the section heading, when the model quoted one.
+  title    String?         @db.Text
+  /// Top-to-bottom position on the page among elements of the same kind.
+  order    Int             @default(0)
+
+  verified  Boolean        @default(false)
+  ambiguous Boolean        @default(false)
+  source    EvidenceSource @default(MODEL_QUOTE)
+
+  x         Int?
+  y         Int?
+  w         Int?
+  h         Int?
+  /// Computed from the verified box: ilk_ekran | ilk_kaydirma | sayfa_alti.
+  placement String?
+  /// Why the element is unverified, shown to the user verbatim.
+  note      String?
+
+  @@index([analysisId, kind])
+  @@index([kind, category])
 }

@@ -55,15 +55,17 @@ function client(): Anthropic {
   return new Anthropic({ apiKey });
 }
 
-async function askJson<T>(
+/** One forced tool call; returns the tool input. Shared with src/lib/projects. */
+export async function askJson<T>(
   toolName: string,
   description: string,
   schema: object,
   content: Anthropic.MessageParam["content"],
+  maxTokens = 2048,
 ): Promise<T | null> {
   const response = await client().messages.create({
     model: MODEL,
-    max_tokens: 2048,
+    max_tokens: maxTokens,
     tools: [{ name: toolName, description, input_schema: schema as never }],
     tool_choice: { type: "tool", name: toolName },
     messages: [{ role: "user", content }],
