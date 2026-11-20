@@ -31,7 +31,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
     <div className="space-y-4">
       <div>
         <Link href="/projects" className="text-xs text-muted hover:text-ink-2">← Projeler</Link>
-        <h1 className="text-2xl font-bold text-ink mt-1">{project.name}</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-ink mt-1 break-words">{project.name}</h1>
         <p className="text-sm text-ink-2 mt-1 max-w-3xl">{project.brief}</p>
         <div className="flex flex-wrap gap-2 mt-2">
           {project.sector ? <Badge>{project.sector.name}</Badge> : <Badge variant="warning">sektör henüz belirlenmedi</Badge>}
@@ -58,7 +58,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
         </div>
       )}
 
-      <div className="flex gap-1 border-b border-line">
+      <div className="flex gap-1 border-b border-line overflow-x-auto">
         {(
           [
             ["list", `Site listesi (${project.targets.filter((t) => t.included).length})`],
@@ -70,7 +70,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
             key={k}
             onClick={() => setTab(k)}
             className={cn(
-              "px-4 py-2 text-sm -mb-px border-b-2",
+              "px-3 sm:px-4 py-2 text-sm -mb-px border-b-2 whitespace-nowrap",
               tab === k ? "border-brand-400 text-ink" : "border-transparent text-muted hover:text-ink-2",
             )}
           >

@@ -128,7 +128,7 @@ export function ProjectResults({ projectId, refreshKey }: { projectId: string; r
           <CardContent className="space-y-3">
             {data.modules.map((m) => (
               <div key={m.key} title={`${m.description}\n\n${m.institutions.join(", ")}`}>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between gap-3 text-sm">
                   <span className="text-ink-2">
                     {m.label}
                     {m.medianPosition !== null && <span className="text-xs text-muted ml-2">#{m.medianPosition}</span>}
@@ -149,7 +149,7 @@ export function ProjectResults({ projectId, refreshKey }: { projectId: string; r
           <CardContent className="space-y-4">
             {data.valueThemes.map((v) => (
               <div key={v.key}>
-                <div className="flex justify-between text-sm" title={v.description}>
+                <div className="flex justify-between gap-3 text-sm" title={v.description}>
                   <span className="text-ink-2">{v.label}</span>
                   <Share count={v.count} percent={v.percent} total={n} />
                 </div>
@@ -180,17 +180,17 @@ export function ProjectResults({ projectId, refreshKey }: { projectId: string; r
         </CardHeader>
         <CardContent className="space-y-4">
           {data.heroes.map((h) => (
-            <div key={h.targetId} className="flex gap-4 border-t border-line pt-4 first:border-0 first:pt-0">
+            <div key={h.targetId} className="flex flex-col sm:flex-row gap-3 sm:gap-4 border-t border-line pt-4 first:border-0 first:pt-0">
               <Link href={`/benchmarks/${h.benchmarkId}`} className="shrink-0">
                 {h.foldImage ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={`/api/files/${h.foldImage}`} alt="" className="w-56 h-36 object-cover object-top rounded border border-line" />
+                  <img src={`/api/files/${h.foldImage}`} alt="" className="w-full h-44 sm:w-56 sm:h-36 object-cover object-top rounded border border-line" />
                 ) : (
-                  <div className="w-56 h-36 rounded border border-dashed border-line" />
+                  <div className="w-full h-44 sm:w-56 sm:h-36 rounded border border-dashed border-line" />
                 )}
               </Link>
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium text-ink">{h.institution}</span>
                   {h.visualLabel && <Badge>{h.visualLabel}</Badge>}
                   {h.unverifiedCount > 0 && (
@@ -232,8 +232,8 @@ export function ProjectResults({ projectId, refreshKey }: { projectId: string; r
               Sektör kataloğundaki kapalı sorular. Paydaya yalnızca var/yok kesinleşmiş gözlemler girer; bilinmeyenler ayrıca gösterilir.
             </p>
           </CardHeader>
-          <CardContent>
-            <table className="w-full text-sm">
+          <CardContent className="overflow-x-auto">
+            <table className="w-full min-w-[560px] text-sm">
               <tbody>
                 {data.criteria.map((c) => (
                   <tr key={c.code} className="border-t border-line align-top">

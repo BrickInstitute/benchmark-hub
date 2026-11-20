@@ -64,29 +64,42 @@ function TargetRow({
   const thumb = t.benchmark?.thumbnailPath ? `/api/files/${t.benchmark.thumbnailPath}` : null;
   const note = t.runNote ?? (t.resolveState === "FAILED" ? t.resolveNote : null);
 
+  const runBusy = t.runState === "QUEUED" || t.runState === "CAPTURING" || t.runState === "ANALYZING";
+
+  // A stacked card on phones, a row on wider screens. A table with five
+  // columns cannot fit 390px without squeezing the URL into a sliver.
   return (
-    <tr className={cn("border-t border-line align-top", !t.included && "opacity-50")}>
-      <td className="py-3 pr-3">
+    <div
+      className={cn(
+        "border-t border-line py-3 flex flex-col gap-3 sm:flex-row sm:items-start",
+        !t.included && "opacity-50",
+      )}
+    >
+      <div className="flex items-start gap-3 sm:contents">
         <input
           type="checkbox"
           checked={t.included}
-          disabled={busy && t.runState !== "IDLE" && t.runState !== "DONE" && t.runState !== "FAILED"}
+          disabled={busy && runBusy}
           onChange={(e) => patch({ included: e.target.checked })}
           title={t.included ? "Hariç tut" : "Dahil et"}
-          className="mt-1 accent-[var(--color-brand-400)]"
+          aria-label={t.included ? "Hariç tut" : "Dahil et"}
+          className="mt-1 shrink-0 accent-[var(--color-brand-400)]"
         />
-      </td>
-      <td className="py-3 pr-3 w-24">
         {thumb ? (
-          <Link href={`/benchmarks/${t.benchmark!.id}`}>
+          <Link href={`/benchmarks/${t.benchmark!.id}`} className="shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={thumb} alt="" className="w-24 h-14 object-cover object-top rounded border border-line" />
           </Link>
         ) : (
-          <div className="w-24 h-14 rounded border border-dashed border-line" />
+          <div className="w-24 h-14 shrink-0 rounded border border-dashed border-line" />
         )}
-      </td>
-      <td className="py-3 pr-3">
+        <div className="min-w-0 flex-1 sm:hidden">
+          <div className="font-medium text-ink truncate">{t.institution}</div>
+          <Badge variant={RUN_VARIANT[t.runState]}>{RUN_LABEL[t.runState]}</Badge>
+        </div>
+      </div>
+
+      <div className="min-w-0 flex-1">
         {editing ? (
           <div className="space-y-2">
             <input className={cn(input, "w-full")} value={name} onChange={(e) => setName(e.target.value)} />
@@ -111,8 +124,8 @@ function TargetRow({
           </div>
         ) : (
           <>
-            <div className="flex items-center gap-2">
-              <span className="font-medium text-ink">{t.institution}</span>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="font-medium text-ink hidden sm:inline">{t.institution}</span>
               <span className="text-xs text-muted">{t.domain}</span>
               {t.source === "AI_SUGGESTED" ? <Badge variant="info">öneri</Badge> : <Badge>elle</Badge>}
             </div>
@@ -130,26 +143,28 @@ function TargetRow({
           </>
         )}
         {error && <p className="text-xs text-rose mt-1">{error}</p>}
-      </td>
-      <td className="py-3 pr-3 whitespace-nowrap">
-        <Badge variant={RUN_VARIANT[t.runState]}>{RUN_LABEL[t.runState]}</Badge>
+      </div>
+
+      <div className="sm:w-64 sm:shrink-0">
+        <div className="hidden sm:block">
+          <Badge variant={RUN_VARIANT[t.runState]}>{RUN_LABEL[t.runState]}</Badge>
+        </div>
         {t.resolveState === "FAILED" && !t.url && (
           <div className="mt-1"><Badge variant="warning">adres yok</Badge></div>
         )}
-        {note && <p className="text-xs text-peach mt-1 max-w-[260px] whitespace-normal">{note}</p>}
+        {note && <p className="text-xs text-peach mt-1">{note}</p>}
         {t.benchmark?.pageAnalysis?.status === "SKIPPED" && t.runState === "DONE" && (
-          <p className="text-xs text-muted mt-1 max-w-[260px] whitespace-normal">{t.benchmark.pageAnalysis.note}</p>
+          <p className="text-xs text-muted mt-1">{t.benchmark.pageAnalysis.note}</p>
         )}
-      </td>
-      <td className="py-3 text-right whitespace-nowrap">
-        {!editing && (
-          <>
-            <Button size="sm" variant="ghost" onClick={() => setEditing(true)}>Düzenle</Button>
-            <Button size="sm" variant="ghost" onClick={remove}>Sil</Button>
-          </>
-        )}
-      </td>
-    </tr>
+      </div>
+
+      {!editing && (
+        <div className="flex gap-1 sm:shrink-0 -ml-2 sm:ml-0">
+          <Button size="sm" variant="ghost" onClick={() => setEditing(true)}>Düzenle</Button>
+          <Button size="sm" variant="ghost" onClick={remove}>Sil</Button>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -186,7 +201,7 @@ export function TargetList({ project, onChange }: { project: ProjectDetail; onCh
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-wrap items-end gap-3">
+          <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-end">
             <div className="flex items-end gap-2">
               <div>
                 <label className="block text-xs text-muted mb-1">Kaç site önerilsin</label>
@@ -200,9 +215,9 @@ export function TargetList({ project, onChange }: { project: ProjectDetail; onCh
                 {project.targets.length ? "Daha fazla site öner" : "Site öner"}
               </Button>
             </div>
-            <div className="flex-1" />
+            <div className="hidden lg:block lg:flex-1" />
             <form
-              className="flex items-end gap-2"
+              className="flex flex-col gap-2 sm:flex-row sm:items-end"
               onSubmit={(e) => {
                 e.preventDefault();
                 call(async () => {
@@ -217,11 +232,11 @@ export function TargetList({ project, onChange }: { project: ProjectDetail; onCh
             >
               <div>
                 <label className="block text-xs text-muted mb-1">Site ekle (alan adı ya da tam adres)</label>
-                <input className={cn(input, "w-72")} value={addInput} onChange={(e) => setAddInput(e.target.value)} placeholder="enpara.com ya da https://..." />
+                <input className={cn(input, "w-full sm:w-72")} value={addInput} onChange={(e) => setAddInput(e.target.value)} placeholder="enpara.com ya da https://..." />
               </div>
               <div>
                 <label className="block text-xs text-muted mb-1">Kurum adı (isteğe bağlı)</label>
-                <input className={cn(input, "w-40")} value={addName} onChange={(e) => setAddName(e.target.value)} placeholder="Enpara" />
+                <input className={cn(input, "w-full sm:w-40")} value={addName} onChange={(e) => setAddName(e.target.value)} placeholder="Enpara" />
               </div>
               <Button type="submit" variant="secondary" disabled={!addInput.trim()}>Ekle</Button>
             </form>
@@ -234,23 +249,10 @@ export function TargetList({ project, onChange }: { project: ProjectDetail; onCh
               Liste boş. &quot;Site öner&quot; ile başlayın ya da siteleri elle ekleyin.
             </p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-xs text-muted">
-                    <th className="pb-2 pr-3 font-normal">Dahil</th>
-                    <th className="pb-2 pr-3 font-normal" />
-                    <th className="pb-2 pr-3 font-normal">Kurum / sayfa</th>
-                    <th className="pb-2 pr-3 font-normal">Durum</th>
-                    <th className="pb-2" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {project.targets.map((t) => (
-                    <TargetRow key={t.id} t={t} projectId={project.id} busy={busy} onChange={onChange} />
-                  ))}
-                </tbody>
-              </table>
+            <div>
+              {project.targets.map((t) => (
+                <TargetRow key={t.id} t={t} projectId={project.id} busy={busy} onChange={onChange} />
+              ))}
             </div>
           )}
         </CardContent>
@@ -265,10 +267,10 @@ export function TargetList({ project, onChange }: { project: ProjectDetail; onCh
           </p>
         </CardHeader>
         <CardContent className="flex flex-wrap items-center gap-3">
-          <span className="text-sm text-ink-2">
+          <span className="text-sm text-ink-2 basis-full lg:basis-auto">
             {included.length} dahil site · {ready.length} adresi hazır · {notDone.length} çalıştırılmayı bekliyor
           </span>
-          <div className="flex-1" />
+          <div className="hidden lg:block lg:flex-1" />
           {pendingResolve.length > 0 && (
             <Button
               variant="secondary"

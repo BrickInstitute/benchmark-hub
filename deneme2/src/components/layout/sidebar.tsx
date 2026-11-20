@@ -35,11 +35,26 @@ const iconMap: Record<string, React.ReactNode> = {
   ),
 };
 
-export function Sidebar() {
+/**
+ * Desktop (md+): a fixed column. Mobile: an off-canvas drawer opened from the
+ * header's menu button - a fixed 256px column on a 390px screen leaves the
+ * content a strip too narrow to use.
+ */
+export function Sidebar({ open = false, onClose }: { open?: boolean; onClose?: () => void }) {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 bg-surface border-r border-line flex flex-col h-screen">
+    <>
+    {open && (
+      <div className="fixed inset-0 z-40 bg-black/60 md:hidden" onClick={onClose} aria-hidden="true" />
+    )}
+    <aside
+      className={cn(
+        "w-64 bg-surface border-r border-line flex flex-col h-screen shrink-0",
+        "fixed inset-y-0 left-0 z-50 transition-transform duration-200 md:static md:translate-x-0",
+        open ? "translate-x-0" : "-translate-x-full",
+      )}
+    >
       <div className="p-6 border-b border-line">
         <h1 className="text-xl font-bold text-brand-300">UI Benchmark Hub</h1>
         <p className="text-xs text-muted mt-1">Benchmark & Evaluation</p>
@@ -52,6 +67,7 @@ export function Sidebar() {
             <Link
               key={item.name}
               href={item.href}
+              onClick={onClose}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                 isActive
@@ -70,5 +86,6 @@ export function Sidebar() {
         <div className="text-xs text-muted-2">v1.0.0</div>
       </div>
     </aside>
+    </>
   );
 }

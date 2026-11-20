@@ -112,7 +112,7 @@ function NewProjectForm({ onCancel }: { onCancel: () => void }) {
             </div>
           </div>
           {error && <p className="text-sm text-rose">{error}</p>}
-          <div className="flex gap-2 justify-end">
+          <div className="flex flex-wrap gap-2 justify-end">
             <Button type="button" variant="ghost" onClick={onCancel}>Vazgeç</Button>
             <Button type="submit" disabled={busy}>{busy ? "Oluşturuluyor..." : "Projeyi oluştur"}</Button>
           </div>
@@ -128,8 +128,8 @@ export default function ProjectsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold text-ink">Projeler</h1>
           <p className="text-sm text-muted mt-1">
             Her proje bir benchmark çalışmasıdır: site listesi, yakalamalar ve karşılaştırmalı analiz.

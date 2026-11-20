@@ -2,12 +2,22 @@
 
 import { useState } from "react";
 
-export function Header() {
+export function Header({ onMenu }: { onMenu?: () => void }) {
   const [search, setSearch] = useState("");
 
   return (
-    <header className="h-16 bg-surface border-b border-line flex items-center justify-between px-6">
-      <div className="flex-1 max-w-md">
+    <header className="h-16 bg-surface border-b border-line flex items-center justify-between gap-3 px-4 md:px-6">
+      <button
+        type="button"
+        onClick={onMenu}
+        className="md:hidden -ml-1 p-2 rounded-lg text-ink-2 hover:bg-surface-3"
+        aria-label="Menüyü aç"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+      <div className="flex-1 min-w-0 max-w-md">
         <div className="relative">
           <svg
             className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-2"
@@ -32,7 +42,7 @@ export function Header() {
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="hidden sm:flex items-center gap-4">
         <span className="text-sm text-muted">UI Benchmark Hub</span>
       </div>
     </header>
