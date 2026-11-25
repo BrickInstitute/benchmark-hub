@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { PAGE_ROLE_LABEL, api, type PageRole, type ProjectDetail } from "./shared";
+import { PAGE_ROLE_LABEL, api, type MarketScope, type PageRole, type ProjectDetail } from "./shared";
 
 const input =
   "w-full px-3 py-2 text-sm bg-surface-2 border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500";
@@ -18,6 +18,9 @@ export function ProjectSettings({ project, onChange }: { project: ProjectDetail;
   const [sectorSlug, setSectorSlug] = useState(project.sector?.slug ?? "");
   const [viewport, setViewport] = useState(project.viewport);
   const [targetCount, setTargetCount] = useState(project.targetCount);
+  const [marketScope, setMarketScope] = useState<MarketScope>(project.marketScope);
+  const initialKeywords = project.topicKeywords.join(", ");
+  const [keywords, setKeywords] = useState(initialKeywords);
   const [msg, setMsg] = useState<string | null>(null);
   const busy = project.jobState === "RUNNING";
 
@@ -35,6 +38,12 @@ export function ProjectSettings({ project, onChange }: { project: ProjectDetail;
           sectorSlug: sectorSlug || null,
           viewport,
           targetCount,
+          marketScope,
+          // Sent only when edited; otherwise the server keeps or (on a topic
+          // change) clears them.
+          ...(keywords !== initialKeywords
+            ? { topicKeywords: keywords.split(",").map((k) => k.trim()).filter((k) => k.length >= 2) }
+            : {}),
         }),
       });
       setMsg("Kaydedildi.");
@@ -100,9 +109,28 @@ export function ProjectSettings({ project, onChange }: { project: ProjectDetail;
               </select>
             </div>
             <div>
+              <label className="block text-xs text-muted mb-1">Öneri kapsamı</label>
+              <select className={input} value={marketScope} onChange={(e) => setMarketScope(e.target.value as MarketScope)}>
+                <option value="LOCAL">Yalnız ülke içi ({project.country})</option>
+                <option value="GLOBAL">Global (yurt dışı)</option>
+                <option value="MIXED">Ülke içi + global</option>
+              </select>
+            </div>
+            <div>
               <label className="block text-xs text-muted mb-1">Varsayılan öneri sayısı</label>
               <input type="number" min={1} max={40} className={input} value={targetCount} onChange={(e) => setTargetCount(Number(e.target.value))} />
             </div>
+          </div>
+          <div>
+            <label className="block text-xs text-muted mb-1">
+              Konunun diğer dillerdeki karşılıkları (virgülle; yabancı sitelerde sayfa bulmak için)
+            </label>
+            <input
+              className={input}
+              value={keywords}
+              onChange={(e) => setKeywords(e.target.value)}
+              placeholder="ilk öneride otomatik üretilir, ör. mobile, mobile plans, telecom"
+            />
           </div>
           {msg && <p className="text-sm text-ink-2">{msg}</p>}
           <div className="flex justify-between">

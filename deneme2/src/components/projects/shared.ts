@@ -7,9 +7,12 @@ export type PageRole = "ENTRY" | "LISTING" | "DECISION" | "CONVERSION" | "TRUST"
 export type RunState = "IDLE" | "QUEUED" | "CAPTURING" | "ANALYZING" | "DONE" | "FAILED";
 export type ResolveState = "PENDING" | "RESOLVING" | "RESOLVED" | "FAILED";
 
+export type MarketScope = "LOCAL" | "GLOBAL" | "MIXED";
+
 export interface Target {
   id: string;
   institution: string;
+  country: string | null;
   domain: string;
   url: string | null;
   source: "AI_SUGGESTED" | "MANUAL";
@@ -39,6 +42,8 @@ export interface ProjectDetail {
   pageRole: PageRole | null;
   viewport: "DESKTOP" | "MOBILE";
   country: string;
+  marketScope: MarketScope;
+  topicKeywords: string[];
   targetCount: number;
   sector: { slug: string; name: string } | null;
   jobKind: "discover" | "resolve" | "run" | null;
@@ -58,6 +63,12 @@ export const PAGE_ROLE_LABEL: Record<PageRole, string> = {
   DECISION: "Ürün / landing sayfası",
   CONVERSION: "Başvuru / form ekranı",
   TRUST: "Kurumsal sayfa",
+};
+
+export const MARKET_SCOPE_LABEL: Record<MarketScope, string> = {
+  LOCAL: "Yalnız ülke içi",
+  GLOBAL: "Global",
+  MIXED: "Ülke içi + global",
 };
 
 export const JOB_LABEL: Record<string, string> = {

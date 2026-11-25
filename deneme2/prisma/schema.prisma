@@ -568,6 +568,16 @@ model FeatureCandidate {
 // adds, removes, excludes and edits. Nothing is analysed until the user runs it.
 // ============================================================================
 
+/// Where discovery looks for institutions.
+enum MarketScope {
+  /// Only institutions operating in Project.country.
+  LOCAL
+  /// Leading institutions worldwide, any country.
+  GLOBAL
+  /// Roughly half local, half global.
+  MIXED
+}
+
 enum TargetSource {
   /// Suggested by the model from the project brief.
   AI_SUGGESTED
@@ -610,10 +620,17 @@ model Project {
   /// What page is being compared ("kredi kartı başvurusu"). Set by the user or
   /// derived from the brief on first discovery. Used to find the equivalent
   /// page on each site.
-  pageTopic String?
-  pageRole  PageRole?
-  viewport  Viewport  @default(DESKTOP)
-  country   String    @default("TR")
+  pageTopic     String?
+  pageRole      PageRole?
+  viewport      Viewport    @default(DESKTOP)
+  country       String      @default("TR")
+  /// Whether discovery suggests local institutions, global ones, or both.
+  marketScope   MarketScope @default(LOCAL)
+  /// The page topic in other languages ("kredi kartı" -> "credit card"). A
+  /// foreign site's links, sitemap and text are not in Turkish, so finding the
+  /// equivalent page and the topic check use these too. Generated once by the
+  /// model, editable in settings.
+  topicKeywords String[]    @default([])
 
   /// Decides which criteria package the run uses. Null until the user picks
   /// one or the first discovery derives it from the brief.
@@ -648,6 +665,9 @@ model ProjectTarget {
   projectId String
 
   institution String
+  /// Two-letter country of the institution, when known. Shown as a badge; also
+  /// picks the browser language the page is captured with.
+  country     String?
   /// Registrable host without "www.". Unique per project: one institution
   /// contributes one page, otherwise five pages of the same bank would count
   /// as five banks in every percentage.

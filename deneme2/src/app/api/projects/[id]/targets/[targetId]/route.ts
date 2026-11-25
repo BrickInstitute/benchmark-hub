@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { parseTargetInput } from "@/lib/projects/discovery";
+import { countryFromDomain, parseTargetInput } from "@/lib/projects/discovery";
 import { fail, HttpError } from "@/lib/projects/http";
 
 export const dynamic = "force-dynamic";
@@ -55,6 +55,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
           });
           if (clash) throw new HttpError(409, `${parsed.domain} listede başka bir satırda var`);
           data.domain = parsed.domain;
+          data.country = countryFromDomain(parsed.domain);
         }
         if (url !== target.url) {
           Object.assign(data, {

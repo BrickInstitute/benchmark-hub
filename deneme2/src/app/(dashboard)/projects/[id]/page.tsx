@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { TargetList } from "@/components/projects/target-list";
 import { ProjectResults } from "@/components/projects/project-results";
 import { ProjectSettings } from "@/components/projects/project-settings";
-import { JOB_LABEL, PAGE_ROLE_LABEL, fetcher, type ProjectDetail } from "@/components/projects/shared";
+import { JOB_LABEL, MARKET_SCOPE_LABEL, PAGE_ROLE_LABEL, fetcher, type ProjectDetail } from "@/components/projects/shared";
 
 type Tab = "list" | "results" | "settings";
 
@@ -39,6 +39,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
           {project.pageRole && <Badge>{PAGE_ROLE_LABEL[project.pageRole]}</Badge>}
           <Badge>{project.viewport === "MOBILE" ? "Mobil" : "Masaüstü"}</Badge>
           <Badge>{project.country}</Badge>
+          {project.marketScope !== "LOCAL" && <Badge variant="info">Öneriler: {MARKET_SCOPE_LABEL[project.marketScope]}</Badge>}
           {!project.modelAvailable && <Badge variant="warning">ANTHROPIC_API_KEY yok: öneri ve analiz kapalı</Badge>}
         </div>
       </div>

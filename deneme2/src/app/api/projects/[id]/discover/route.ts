@@ -5,7 +5,11 @@ import { fail, requireProject } from "@/lib/projects/http";
 
 export const dynamic = "force-dynamic";
 
-const Body = z.object({ count: z.number().int().min(1).max(40).optional() });
+const Body = z.object({
+  count: z.number().int().min(1).max(40).optional(),
+  /** Overrides the project's market scope for this discovery only. */
+  scope: z.enum(["LOCAL", "GLOBAL", "MIXED"]).optional(),
+});
 
 /**
  * Starts discovery in the background: the model suggests institutions not
@@ -16,7 +20,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   try {
     await requireProject(params.id);
     const body = Body.parse(await request.json().catch(() => ({})));
-    await startDiscovery(params.id, body.count);
+    await startDiscovery(params.id, body.count, body.scope);
     return NextResponse.json({ data: { started: "discover" } }, { status: 202 });
   } catch (e) {
     return fail(e);

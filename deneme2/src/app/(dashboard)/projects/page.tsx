@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PAGE_ROLE_LABEL, api, fetcher, type PageRole } from "@/components/projects/shared";
+import { MARKET_SCOPE_LABEL, PAGE_ROLE_LABEL, api, fetcher, type MarketScope, type PageRole } from "@/components/projects/shared";
 
 interface ProjectListItem {
   id: string;
@@ -17,6 +17,7 @@ interface ProjectListItem {
   pageTopic: string | null;
   pageRole: PageRole | null;
   viewport: string;
+  marketScope: MarketScope;
   jobState: string;
   jobKind: string | null;
   sector: { slug: string; name: string } | null;
@@ -35,6 +36,7 @@ function NewProjectForm({ onCancel }: { onCancel: () => void }) {
   const [pageRole, setPageRole] = useState<"" | PageRole>("");
   const [viewport, setViewport] = useState<"DESKTOP" | "MOBILE">("DESKTOP");
   const [targetCount, setTargetCount] = useState(15);
+  const [marketScope, setMarketScope] = useState<MarketScope>("LOCAL");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -52,6 +54,7 @@ function NewProjectForm({ onCancel }: { onCancel: () => void }) {
           pageRole: pageRole || null,
           viewport,
           targetCount,
+          marketScope,
         }),
       });
       router.push(`/projects/${p.id}`);
@@ -85,7 +88,7 @@ function NewProjectForm({ onCancel }: { onCancel: () => void }) {
               required
             />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <div>
               <label className="block text-xs text-muted mb-1">Sayfa konusu (boşsa tanımdan çıkarılır)</label>
               <input className={input} value={pageTopic} onChange={(e) => setPageTopic(e.target.value)} placeholder="kredi kartı" />
@@ -104,6 +107,14 @@ function NewProjectForm({ onCancel }: { onCancel: () => void }) {
               <select className={input} value={viewport} onChange={(e) => setViewport(e.target.value as "DESKTOP" | "MOBILE")}>
                 <option value="DESKTOP">Masaüstü (1440px)</option>
                 <option value="MOBILE">Mobil (390px)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-muted mb-1">Öneri kapsamı</label>
+              <select className={input} value={marketScope} onChange={(e) => setMarketScope(e.target.value as MarketScope)}>
+                <option value="LOCAL">Yalnız Türkiye</option>
+                <option value="GLOBAL">Global (yurt dışı)</option>
+                <option value="MIXED">Türkiye + global</option>
               </select>
             </div>
             <div>
@@ -169,6 +180,7 @@ export default function ProjectsPage() {
                   {p.pageTopic && <Badge>{p.pageTopic}</Badge>}
                   {p.pageRole && <Badge>{PAGE_ROLE_LABEL[p.pageRole]}</Badge>}
                   <Badge>{p.viewport === "MOBILE" ? "Mobil" : "Masaüstü"}</Badge>
+                  {p.marketScope !== "LOCAL" && <Badge variant="info">{MARKET_SCOPE_LABEL[p.marketScope]}</Badge>}
                 </div>
                 <p className="text-xs text-muted mt-3">
                   {p.counts.targets} site · {p.counts.done} analiz edildi

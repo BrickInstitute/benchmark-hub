@@ -31,7 +31,8 @@ onu çağırır.
 | Sayfa analizi | Hero, modüller, değer önerileri. Yeni. | `PageAnalysis`, `PageElement` |
 | Proje özeti | Listedeki tüm sayfalar üzerinden sayım. Saklanmaz, her istekte hesaplanır. | — (`summary.ts`) |
 
-Bir proje şunları sabitler: **sayfa konusu** (`pageTopic`, ör. "kredi kartı"),
+Bir proje şunları sabitler: **pazar kapsamı** (öneriler yalnız ülke içinden
+mi, globalden mi, ikisinden mi gelsin; bkz. "Pazar kapsamı"), **sayfa konusu** (`pageTopic`, ör. "kredi kartı"),
 **sayfa türü** (`pageRole`, ör. `DECISION`), **sektör** (hangi ölçüt
 kataloğunun kullanılacağı), **görünüm** (masaüstü/mobil) ve **ülke**. Bir
 projedeki bütün sayfalar aynı koşullarda ölçülür; masaüstü ve mobil
@@ -67,6 +68,48 @@ değer her zaman modelinkinden önce gelir. Üçü de elle girilirse model hiç
 Sektör çıkarılırken modele mevcut sektörlerin listesi verilir ve uyan varsa onu
 kullanması istenir. Amaç `olcum-yontemi.md`'de anlatılan "aynı sektör iki ayrı
 adla iki kovaya düşüyor" sorununu proje tarafında azaltmaktır; tamamen çözmez.
+
+### Pazar kapsamı
+
+`Project.marketScope` öneri adımının nereye bakacağını belirler:
+
+| Değer | Öneri |
+|---|---|
+| `LOCAL` (varsayılan) | Yalnız `Project.country` pazarında faaliyet gösteren kurumlar |
+| `GLOBAL` | Dünya genelinde sektörünün önde gelenleri, farklı ülkelerden; proje ülkesinin kurumları hariç |
+| `MIXED` | Yaklaşık yarısı ülke içinden, yarısı global |
+
+"Site öner" düğmesinin yanındaki seçici kapsamı **yalnızca o öneri için**
+değiştirir (`POST /discover { scope }`). Böylece yerel bir liste ayarı
+değiştirmeden global örneklerle genişletilebilir.
+
+Yabancı siteler üç yerde farklı davranış gerektirdi:
+
+- **Konu çevirisi.** "gsm" ya da "kredi kartı" İngilizce bir sitenin menüsünde,
+  sitemap yollarında ve metninde geçmez. `Project.topicKeywords` konunun
+  İngilizce karşılıklarını ve yaygın eş anlamlılarını tutar ("mobile",
+  "credit card"). `interpretBrief` bunları üretir; konu elle girildiyse
+  `translateTopic` bir kez üretip kaydeder. Sayfa bulma (menü + sitemap) ve
+  konu kontrolü bu karşılıkları da kullanır. Ayarlar sekmesinden düzenlenir;
+  konu değiştirilip karşılıklar elle girilmezse sunucu eskilerini temizler,
+  sonraki öneri/çalıştırma yenilerini üretir. Model yoksa karşılık da yoktur:
+  yabancı sitelerin adresi elle girilmelidir.
+- **Ülke.** `ProjectTarget.country`: modelin önerdiği kurumda modelden, elle
+  eklenen sitede alan adı uzantısından (`.co.uk` → GB, `.com.tr` → TR) gelir.
+  `.com` gibi genel uzantılarda boş kalır, tahmin edilmez. Listede ve hero
+  tablosunda rozet olarak görünür.
+- **Tarayıcı dili.** Yakalama varsayılan olarak `tr-TR` / `Europe/Istanbul`
+  ile yapılır. Türk tarayıcısıyla açılan yabancı bir site Türkçe sürüme
+  yönlendirebilir ya da dil seçici gösterebilir. Bu yüzden ülkesi TR olmayan
+  siteler `en-US` / `UTC` ile yakalanır (`captureLocale`). Ülkesi bilinmeyen
+  site proje ülkesinin diliyle yakalanır.
+
+Bir projede kurum kimliği alan adı olduğu için `vodafone.com.tr` ve
+`vodafone.co.uk` iki ayrı hedeftir. Global karşılaştırmada çoğu zaman istenen de
+budur.
+
+Bilinen sınır: sonuç sayımları ülke içi ve global siteleri **birlikte** sayar.
+"Türk operatörlerinin %X'i, global operatörlerin %Y'si" ayrımı henüz yok.
 
 ### 2. Site listesi
 
@@ -270,11 +313,11 @@ hatası `400`, çakışma `409`, yok `404`.
 | Uç | Gövde | Ne yapar |
 |---|---|---|
 | `GET /api/projects` | — | Projeler + site sayıları |
-| `POST /api/projects` | `name, brief, pageTopic?, pageRole?, viewport?, country?, sectorSlug?, targetCount?` | Boş proje oluşturur |
+| `POST /api/projects` | `name, brief, pageTopic?, pageRole?, viewport?, country?, marketScope?, sectorSlug?, targetCount?` | Boş proje oluşturur |
 | `GET /api/projects/:id` | — | Proje + liste + iş durumu + `modelAvailable` + sektör listesi |
-| `PATCH /api/projects/:id` | yukarıdaki alanlar | Ayarları değiştirir (iş sürerken `409`) |
+| `PATCH /api/projects/:id` | yukarıdaki alanlar + `topicKeywords?` | Ayarları değiştirir (iş sürerken `409`) |
 | `DELETE /api/projects/:id` | — | Projeyi ve listeyi siler; yakalamalar kalır |
-| `POST /api/projects/:id/discover` | `count?` | Öneri işi başlatır (`202`) |
+| `POST /api/projects/:id/discover` | `count?, scope?` | Öneri işi başlatır (`202`). `scope` yalnız bu öneri için kapsamı değiştirir |
 | `POST /api/projects/:id/resolve` | — | Adresi olmayanların sayfasını bulur (`202`) |
 | `POST /api/projects/:id/targets` | `input, institution?` | Site ekler. `input` alan adı ya da tam adres |
 | `PATCH /api/projects/:id/targets/:tid` | `institution?, included?, url?` | Hedefi düzenler. `url: ""` adresi temizler |
@@ -303,7 +346,12 @@ Mevcut koda dokunulan yerler:
   parametresi eklendi. Davranış aynı.
 - `measurement/capture.ts`: isteğe bağlı `CHROMIUM_EXECUTABLE_PATH` ortam
   değişkeni. Yalnızca kurulu Chromium'un Playwright sürümüyle eşleşmediği
-  makineler için; Docker imajında tanımsızdır, davranış değişmez.
+  makineler için; Docker imajında tanımsızdır, davranış değişmez. Ayrıca
+  isteğe bağlı `locale` / `timezoneId` (varsayılan `tr-TR` /
+  `Europe/Istanbul`, kohort akışı için değişmedi).
+- `measurement/dom-snapshot.ts`: hero düğmesi fiil listesine birkaç İngilizce
+  kalıp eklendi ("shop now", "order now", "compare"...). Yalnızca İngilizce
+  sayfalarda ana eylem düğmesi tespitini etkiler.
 - `components/layout/sidebar.tsx`: "Projeler" menüsü.
 
 ## Yerel geliştirme

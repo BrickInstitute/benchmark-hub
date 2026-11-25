@@ -23,11 +23,14 @@ import { generateSectorCatalogue } from "../measurement/catalogue-generation";
 import type { TargetIdentity } from "../measurement/peer-discovery";
 import { getStorageProvider } from "../storage/storage-provider";
 import {
+  captureLocale,
   interpretBrief,
   proposeInstitutions,
   resolveTargetPage,
   topicMatches,
+  translateTopic,
   type BriefReading,
+  type MarketScope,
 } from "./discovery";
 import { describePage, savePageAnalysis } from "./page-analysis";
 
@@ -149,6 +152,7 @@ async function ensureReading(project: Project): Promise<BriefReading> {
       country: project.country,
       pageTopic: project.pageTopic,
       pageRole: project.pageRole,
+      topicKeywords: await ensureKeywords(project, project.pageTopic),
     };
   }
 
@@ -168,18 +172,41 @@ async function ensureReading(project: Project): Promise<BriefReading> {
       create: { slug: reading.sectorSlug, name: reading.sectorName, country: reading.country },
     });
   }
+  const pageTopic = project.pageTopic ?? reading.pageTopic;
+  // The model's translations belong to ITS topic; if the user typed a
+  // different topic, translate that one instead.
+  const keywords = project.topicKeywords.length
+    ? project.topicKeywords
+    : project.pageTopic && project.pageTopic !== reading.pageTopic
+      ? await translateTopic(project.pageTopic, project.brief).catch(() => [])
+      : reading.topicKeywords;
   const final: BriefReading = {
     sectorName: sector.name,
     sectorSlug: sector.slug,
     country: project.country || reading.country,
-    pageTopic: project.pageTopic ?? reading.pageTopic,
+    pageTopic,
     pageRole: project.pageRole ?? reading.pageRole,
+    topicKeywords: keywords,
   };
   await prisma.project.update({
     where: { id: project.id },
-    data: { sectorId: sector.id, pageTopic: final.pageTopic, pageRole: final.pageRole },
+    data: { sectorId: sector.id, pageTopic: final.pageTopic, pageRole: final.pageRole, topicKeywords: keywords },
   });
   return final;
+}
+
+/**
+ * Translations of a hand-entered topic, generated once and saved. Without a
+ * model the project simply has none: local (Turkish) sites still work, foreign
+ * ones may fail the topic check and need their URL entered by hand.
+ */
+async function ensureKeywords(project: Project, pageTopic: string): Promise<string[]> {
+  if (project.topicKeywords.length || !hasModel()) return project.topicKeywords;
+  const keywords = await translateTopic(pageTopic, project.brief).catch(() => [] as string[]);
+  if (keywords.length) {
+    await prisma.project.update({ where: { id: project.id }, data: { topicKeywords: keywords } });
+  }
+  return keywords;
 }
 
 /** The criteria package for the project's sector; generated on first use. */
@@ -229,6 +256,7 @@ async function resolvePendingTargets(
       outcome = await resolveTargetPage({
         domain: t.domain,
         institution: t.institution,
+        country: t.country,
         reading,
         viewport: project.viewport,
       });
@@ -260,8 +288,12 @@ async function resolvePendingTargets(
   return { resolved, failed };
 }
 
-/** Model suggests institutions, then each one's page is resolved. */
-export async function startDiscovery(projectId: string, count?: number): Promise<void> {
+/**
+ * Model suggests institutions, then each one's page is resolved. `scope`
+ * overrides the project's market scope for this one discovery, so a local
+ * list can be topped up with global examples without changing the setting.
+ */
+export async function startDiscovery(projectId: string, count?: number, scope?: MarketScope): Promise<void> {
   if (!hasModel()) throw new Error("Öneri almak için ANTHROPIC_API_KEY gerekli. Siteleri elle ekleyebilirsiniz.");
   await startJob(projectId, "discover", async (progress) => {
     const project = await prisma.project.findUniqueOrThrow({ where: { id: projectId } });
@@ -277,6 +309,7 @@ export async function startDiscovery(projectId: string, count?: number): Promise
       brief: project.brief,
       reading,
       count: count ?? project.targetCount,
+      scope: scope ?? project.marketScope,
       excludeDomains: existing.map((e) => e.domain),
     });
     let order = existing.reduce((m, e) => Math.max(m, e.order), -1) + 1;
@@ -288,6 +321,7 @@ export async function startDiscovery(projectId: string, count?: number): Promise
           projectId,
           institution: c.institution,
           domain: c.domain,
+          country: c.country,
           source: "AI_SUGGESTED",
           rationale: c.why,
           order: order++,
@@ -364,6 +398,7 @@ export async function startRun(projectId: string, options: RunOptions = {}): Pro
           institution: fresh.institution,
           sectorSlug: reading.sectorSlug,
           deterministicOnly: mode === "capture_only",
+          ...captureLocale(fresh.country ?? project.country),
         });
         await prisma.projectTarget.update({
           where: { id: t.id },
@@ -389,7 +424,7 @@ export async function startRun(projectId: string, options: RunOptions = {}): Pro
         // A page the SOFTWARE chose must actually be about the topic; an
         // unrelated page in the list would distort every percentage. A URL
         // the user typed is taken as their deliberate choice.
-        if (fresh.foundVia !== "manual" && reading.pageTopic && !topicMatches(reading.pageTopic, snap.visibleText)) {
+        if (fresh.foundVia !== "manual" && reading.pageTopic && !topicMatches(reading.pageTopic, snap.visibleText, reading.topicKeywords)) {
           const note = `sayfa "${reading.pageTopic}" konusuyla ilgili görünmüyor; doğru adresi elle girin`;
           await savePageAnalysis(prisma, result.benchmarkId, { status: "SKIPPED", note });
           await prisma.projectTarget.update({ where: { id: t.id }, data: { runState: "FAILED", runNote: note } });

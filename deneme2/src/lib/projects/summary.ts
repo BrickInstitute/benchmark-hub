@@ -34,6 +34,7 @@ export interface PrevalenceRow {
 export interface HeroRow {
   targetId: string;
   institution: string;
+  country: string | null;
   url: string | null;
   benchmarkId: string;
   foldImage: string | null;
@@ -150,6 +151,7 @@ export async function projectSummary(projectId: string): Promise<ProjectSummary>
     heroes.push({
       targetId: t.id,
       institution: t.institution,
+      country: t.country,
       url: t.url,
       benchmarkId: t.benchmark!.id,
       foldImage: t.benchmark!.thumbnailPath,

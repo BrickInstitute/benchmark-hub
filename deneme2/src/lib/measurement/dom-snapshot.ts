@@ -308,6 +308,7 @@ export function collectDomSnapshot(): DomSnapshot {
     "apply", "learn more", "read more", "get started", "sign up", "log in",
     "discover", "explore", "buy now", "add to cart", "book now", "find out",
     "see more", "view all", "download", "subscribe", "request",
+    "shop now", "order now", "join now", "compare", "switch to", "get it now",
   ];
 
   /**

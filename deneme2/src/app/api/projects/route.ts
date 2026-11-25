@@ -14,6 +14,7 @@ const CreateBody = z.object({
   pageRole: z.enum(PAGE_ROLES).optional().nullable(),
   viewport: z.enum(["DESKTOP", "MOBILE"]).optional(),
   country: z.string().trim().length(2).optional(),
+  marketScope: z.enum(["LOCAL", "GLOBAL", "MIXED"]).optional(),
   sectorSlug: z.string().trim().optional().nullable(),
   targetCount: z.number().int().min(1).max(40).optional(),
 });
@@ -62,6 +63,7 @@ export async function POST(request: NextRequest) {
         pageRole: body.pageRole ?? null,
         viewport: body.viewport ?? "DESKTOP",
         country: (body.country ?? "TR").toUpperCase(),
+        marketScope: body.marketScope ?? "LOCAL",
         sectorId,
         targetCount: body.targetCount ?? 15,
         createdBy: request.headers.get("x-bh-user"),

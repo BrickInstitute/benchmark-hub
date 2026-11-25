@@ -28,6 +28,7 @@ interface Summary {
   heroes: Array<{
     targetId: string;
     institution: string;
+    country: string | null;
     url: string | null;
     benchmarkId: string;
     foldImage: string | null;
@@ -192,6 +193,7 @@ export function ProjectResults({ projectId, refreshKey }: { projectId: string; r
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium text-ink">{h.institution}</span>
+                  {h.country && <Badge>{h.country}</Badge>}
                   {h.visualLabel && <Badge>{h.visualLabel}</Badge>}
                   {h.unverifiedCount > 0 && (
                     <span className="text-xs text-sky" title="Modelin alıntısı sayfada bulunamadı; sayılmadı">

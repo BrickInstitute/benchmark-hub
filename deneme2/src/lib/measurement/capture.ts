@@ -34,6 +34,13 @@ export interface CaptureRequest {
   url: string;
   viewport: ViewportName;
   skipRobots?: boolean;
+  /**
+   * Browser language and time zone. Default tr-TR / Europe/Istanbul. A foreign
+   * site captured with a Turkish browser may redirect to a Turkish version or
+   * show a language picker instead of the page being compared.
+   */
+  locale?: string;
+  timezoneId?: string;
 }
 
 export interface CaptureResult {
@@ -182,8 +189,8 @@ export async function capturePage(request: CaptureRequest): Promise<CaptureResul
     const context = await browser.newContext({
       userAgent: USER_AGENT,
       viewport: vp,
-      locale: "tr-TR",
-      timezoneId: "Europe/Istanbul",
+      locale: request.locale ?? "tr-TR",
+      timezoneId: request.timezoneId ?? "Europe/Istanbul",
       deviceScaleFactor: 1,
     });
     const page = await context.newPage();

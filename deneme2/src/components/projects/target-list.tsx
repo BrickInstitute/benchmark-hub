@@ -10,6 +10,7 @@ import {
   RESOLVE_LABEL,
   RUN_LABEL,
   api,
+  type MarketScope,
   type ProjectDetail,
   type RunState,
   type Target,
@@ -127,6 +128,7 @@ function TargetRow({
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <span className="font-medium text-ink hidden sm:inline">{t.institution}</span>
               <span className="text-xs text-muted">{t.domain}</span>
+              {t.country && <Badge>{t.country}</Badge>}
               {t.source === "AI_SUGGESTED" ? <Badge variant="info">öneri</Badge> : <Badge>elle</Badge>}
             </div>
             {t.url ? (
@@ -172,6 +174,7 @@ export function TargetList({ project, onChange }: { project: ProjectDetail; onCh
   const [addInput, setAddInput] = useState("");
   const [addName, setAddName] = useState("");
   const [count, setCount] = useState(project.targetCount);
+  const [scope, setScope] = useState<MarketScope>(project.marketScope);
   const [error, setError] = useState<string | null>(null);
   const busy = project.jobState === "RUNNING";
 
@@ -202,15 +205,23 @@ export function TargetList({ project, onChange }: { project: ProjectDetail; onCh
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-end">
-            <div className="flex items-end gap-2">
+            <div className="flex flex-wrap items-end gap-2">
               <div>
                 <label className="block text-xs text-muted mb-1">Kaç site önerilsin</label>
-                <input type="number" min={1} max={40} className={cn(input, "w-24")} value={count} onChange={(e) => setCount(Number(e.target.value))} />
+                <input type="number" min={1} max={40} className={cn(input, "w-20")} value={count} onChange={(e) => setCount(Number(e.target.value))} />
+              </div>
+              <div>
+                <label className="block text-xs text-muted mb-1">Nereden</label>
+                <select className={cn(input, "w-36")} value={scope} onChange={(e) => setScope(e.target.value as MarketScope)}>
+                  <option value="LOCAL">{project.country === "TR" ? "Türkiye" : project.country}</option>
+                  <option value="GLOBAL">Global</option>
+                  <option value="MIXED">İkisi de</option>
+                </select>
               </div>
               <Button
                 disabled={busy || !project.modelAvailable}
                 title={project.modelAvailable ? undefined : "ANTHROPIC_API_KEY tanımlı değil"}
-                onClick={() => call(() => api(`/api/projects/${project.id}/discover`, { method: "POST", body: JSON.stringify({ count }) }))}
+                onClick={() => call(() => api(`/api/projects/${project.id}/discover`, { method: "POST", body: JSON.stringify({ count, scope }) }))}
               >
                 {project.targets.length ? "Daha fazla site öner" : "Site öner"}
               </Button>

@@ -15,6 +15,9 @@ const PatchBody = z.object({
   pageRole: z.enum(PAGE_ROLES).nullable().optional(),
   viewport: z.enum(["DESKTOP", "MOBILE"]).optional(),
   country: z.string().trim().length(2).optional(),
+  marketScope: z.enum(["LOCAL", "GLOBAL", "MIXED"]).optional(),
+  /** Topic translations; replaces the list. Empty array clears it. */
+  topicKeywords: z.array(z.string().trim().min(2).max(60)).max(8).optional(),
   sectorSlug: z.string().trim().nullable().optional(),
   targetCount: z.number().int().min(1).max(40).optional(),
 });
@@ -67,9 +70,14 @@ export async function GET(_request: NextRequest, { params }: Params) {
  */
 export async function PATCH(request: NextRequest, { params }: Params) {
   try {
-    await requireProject(params.id);
+    const current = await requireProject(params.id);
     if (activeJob(params.id)) throw new HttpError(409, "iş çalışırken proje ayarları değiştirilemez");
     const body = PatchBody.parse(await request.json());
+    // Translations belong to a topic. A new topic without new translations
+    // clears them; the next discovery/run regenerates them.
+    const topicChanged =
+      body.pageTopic !== undefined && (body.pageTopic || null) !== current.pageTopic;
+    const topicKeywords = body.topicKeywords ?? (topicChanged ? [] : undefined);
     let sectorId: string | null | undefined;
     if (body.sectorSlug !== undefined) {
       if (body.sectorSlug === null || body.sectorSlug === "") sectorId = null;
@@ -88,6 +96,8 @@ export async function PATCH(request: NextRequest, { params }: Params) {
         pageRole: body.pageRole,
         viewport: body.viewport,
         country: body.country?.toUpperCase(),
+        marketScope: body.marketScope,
+        topicKeywords,
         targetCount: body.targetCount,
         ...(sectorId !== undefined ? { sectorId } : {}),
       },

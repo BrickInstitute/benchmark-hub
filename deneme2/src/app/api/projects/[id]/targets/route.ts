@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { institutionFromDomain, parseTargetInput } from "@/lib/projects/discovery";
+import { countryFromDomain, institutionFromDomain, parseTargetInput } from "@/lib/projects/discovery";
 import { fail, HttpError, requireProject } from "@/lib/projects/http";
 
 export const dynamic = "force-dynamic";
@@ -44,6 +44,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         projectId: params.id,
         institution: body.institution || institutionFromDomain(parsed.domain),
         domain: parsed.domain,
+        country: countryFromDomain(parsed.domain),
         url: parsed.url,
         source: "MANUAL",
         foundVia: parsed.url ? "manual" : null,
