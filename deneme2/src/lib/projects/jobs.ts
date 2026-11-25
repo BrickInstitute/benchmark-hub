@@ -243,7 +243,9 @@ async function resolvePendingTargets(
 ): Promise<{ resolved: number; failed: number }> {
   const project = await prisma.project.findUniqueOrThrow({ where: { id: projectId } });
   const pending = await prisma.projectTarget.findMany({
-    where: { projectId, included: true, resolveState: "PENDING", url: null },
+    // FAILED is retried too: most failures are transient (a slow site, a
+    // redirect mid-load), and the alternative is typing every URL by hand.
+    where: { projectId, included: true, resolveState: { in: ["PENDING", "FAILED"] }, url: null },
     orderBy: { order: "asc" },
   });
   let resolved = 0;

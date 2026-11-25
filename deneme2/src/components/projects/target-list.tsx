@@ -190,7 +190,8 @@ export function TargetList({ project, onChange }: { project: ProjectDetail; onCh
 
   const included = project.targets.filter((t) => t.included);
   const ready = included.filter((t) => t.url);
-  const pendingResolve = included.filter((t) => !t.url && t.resolveState === "PENDING");
+  const pendingResolve = included.filter((t) => !t.url && (t.resolveState === "PENDING" || t.resolveState === "FAILED"));
+  const failedResolve = pendingResolve.filter((t) => t.resolveState === "FAILED").length;
   const notDone = ready.filter((t) => t.runState !== "DONE");
 
   return (
@@ -288,7 +289,9 @@ export function TargetList({ project, onChange }: { project: ProjectDetail; onCh
               disabled={busy}
               onClick={() => call(() => api(`/api/projects/${project.id}/resolve`, { method: "POST" }))}
             >
-              {pendingResolve.length} sitenin adresini bul
+              {failedResolve === pendingResolve.length
+                ? `${pendingResolve.length} sitenin adresini yeniden dene`
+                : `${pendingResolve.length} sitenin adresini bul`}
             </Button>
           )}
           <Button

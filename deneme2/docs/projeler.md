@@ -349,6 +349,21 @@ Mevcut koda dokunulan yerler:
   makineler için; Docker imajında tanımsızdır, davranış değişmez. Ayrıca
   isteğe bağlı `locale` / `timezoneId` (varsayılan `tr-TR` /
   `Europe/Istanbul`, kohort akışı için değişmedi).
+- `measurement/capture.ts`, dayanıklılık (bütün yakalamaları etkiler, kohort
+  dahil):
+  - Sayfa okunurken kendi kendine başka adrese giderse (JS yönlendirmesi,
+    çerez duvarının sayfayı yenilemesi) okuma "Execution context was destroyed"
+    ile düşüyordu. Artık yeni sayfanın oturması beklenip okuma en fazla 3 kez
+    yeniden deneniyor (`runInPageStable`).
+  - 45 saniyede DOMContentLoaded'a ulaşmayan sayfaya ikinci deneme: ilk yanıt
+    gelince devam, DOM için en fazla 30 saniye daha, hâlâ yükleniyorsa
+    yükleme durdurulur (`window.stop()`) ve gelen kadarı yakalanır. Kullanılır
+    olup olmadığına kalite kapısı karar verir (`openPage`).
+  - Playwright'ın ekran görüntüsü yükü durdurulmuş sayfada yazı tiplerini
+    bekleyip takılıyor; bu durumda DevTools protokolüyle alınıyor
+    (`screenshot`).
+- Adresi bulunamayan siteler "adresini bul" ile yeniden denenir (önceden
+  yalnızca hiç denenmemişler aranıyordu).
 - `measurement/dom-snapshot.ts`: hero düğmesi fiil listesine birkaç İngilizce
   kalıp eklendi ("shop now", "order now", "compare"...). Yalnızca İngilizce
   sayfalarda ana eylem düğmesi tespitini etkiler.

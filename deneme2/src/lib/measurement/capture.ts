@@ -98,9 +98,113 @@ async function runInPage<T>(page: Page, fn: () => T | Promise<T>): Promise<T> {
   ) as Promise<T>;
 }
 
+/**
+ * The page navigated away while we were reading it: a JS redirect, a consent
+ * wall reloading the page, a language redirect. The evaluation is lost, not
+ * wrong - the right move is to let the new page settle and read again.
+ */
+function isNavigationRace(e: unknown): boolean {
+  const m = e instanceof Error ? e.message : String(e);
+  return /Execution context was destroyed|Cannot find context with specified id|frame was detached|because of a navigation/i.test(m);
+}
+
+async function settle(page: Page): Promise<void> {
+  await page.waitForLoadState("domcontentloaded", { timeout: 15_000 }).catch(() => {});
+  await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => {});
+}
+
+/**
+ * runInPage, retried when the page navigates mid-evaluation. After the last
+ * attempt the error propagates and the capture is reported as ERROR, never
+ * as a page with missing content.
+ */
+async function runInPageStable<T>(page: Page, fn: () => T | Promise<T>, attempts = 3): Promise<T> {
+  for (let i = 1; ; i++) {
+    try {
+      return await runInPage(page, fn);
+    } catch (e) {
+      if (!isNavigationRace(e) || i >= attempts) throw e;
+      await settle(page);
+    }
+  }
+}
+
+/** Pages whose load was stopped: Playwright's screenshot would only time out. */
+const stoppedPages = new WeakSet<Page>();
+
+/**
+ * Opens the page. A slow site that never reaches DOMContentLoaded within the
+ * first timeout gets a second, more lenient attempt: continue as soon as the
+ * response starts arriving, then give the DOM a bounded wait. Whatever loaded
+ * is captured and the quality gate decides whether it is usable - a heavy
+ * page that renders in 60s is still a real page.
+ */
+async function openPage(page: Page, url: string) {
+  try {
+    return await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45_000 });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    if (!/timeout/i.test(message)) throw e;
+    const response = await page.goto(url, { waitUntil: "commit", timeout: 30_000 });
+    const loaded = await page
+      .waitForLoadState("domcontentloaded", { timeout: 30_000 })
+      .then(() => true)
+      .catch(() => false);
+    // Still loading: stop it, like the browser's stop button. Otherwise the
+    // document never completes and the screenshot waits for it forever.
+    if (!loaded) {
+      await page.evaluate("window.stop()").catch(() => {});
+      stoppedPages.add(page);
+    }
+    return response;
+  }
+}
+
+/**
+ * Screenshot with a fallback. Playwright's own screenshot waits for web fonts
+ * and can hang on a page whose load was stopped (see openPage) even after the
+ * document reports complete. The DevTools protocol call has no such wait, so
+ * it takes over when the normal path times out.
+ */
+async function screenshot(page: Page, fullPage: boolean): Promise<Buffer> {
+  try {
+    if (stoppedPages.has(page)) throw new Error("timeout: load was stopped, using DevTools screenshot");
+    return await page.screenshot({ type: "png", fullPage, timeout: 20_000 });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    if (!/timeout/i.test(message)) throw e;
+    const cdp = await page.context().newCDPSession(page);
+    try {
+      let clip: { x: number; y: number; width: number; height: number; scale: number } | undefined;
+      if (fullPage) {
+        const m = (await cdp.send("Page.getLayoutMetrics")) as {
+          cssContentSize?: { width: number; height: number };
+          contentSize: { width: number; height: number };
+        };
+        const size = m.cssContentSize ?? m.contentSize;
+        const vp = page.viewportSize();
+        clip = {
+          x: 0,
+          y: 0,
+          width: Math.ceil(vp?.width ?? size.width),
+          height: Math.ceil(Math.min(size.height, 30_000)),
+          scale: 1,
+        };
+      }
+      const r = await cdp.send("Page.captureScreenshot", {
+        format: "png",
+        ...(clip ? { clip, captureBeyondViewport: true } : {}),
+      });
+      return Buffer.from(r.data, "base64");
+    } finally {
+      await cdp.detach().catch(() => {});
+    }
+  }
+}
+
 /** Triggers lazy content, then returns to the top. */
 async function scrollThrough(page: Page): Promise<void> {
-  await runInPage(page, async () => {
+  await runInPageStable(page, async () => {
     const step = window.innerHeight * 0.8;
     const limit = Math.min(document.body.scrollHeight, 30000);
     for (let y = 0; y < limit; y += step) {
@@ -197,10 +301,7 @@ export async function capturePage(request: CaptureRequest): Promise<CaptureResul
 
     let httpStatus: number | null = null;
     try {
-      const response = await page.goto(request.url, {
-        waitUntil: "domcontentloaded",
-        timeout: 45_000,
-      });
+      const response = await openPage(page, request.url);
       httpStatus = response?.status() ?? null;
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
@@ -216,17 +317,17 @@ export async function capturePage(request: CaptureRequest): Promise<CaptureResul
     await scrollThrough(page);
 
     // 1) With the consent dialog visible - U12 needs this measurement.
-    const withBanner = await runInPage(page, collectDomSnapshot);
-    const foldWithBanner = await page.screenshot({ type: "png" });
+    const withBanner = await runInPageStable(page, collectDomSnapshot);
+    const foldWithBanner = await screenshot(page, false);
 
     // 2) Dismiss it; the real measurement happens on this state.
     await dismissCookieBanner(page);
     await page.waitForTimeout(400);
     await scrollThrough(page);
 
-    const clean = await runInPage(page, collectDomSnapshot);
-    const fold = await page.screenshot({ type: "png" });
-    const full = await page.screenshot({ type: "png", fullPage: true });
+    const clean = await runInPageStable(page, collectDomSnapshot);
+    const fold = await screenshot(page, false);
+    const full = await screenshot(page, true);
     const finalUrl = page.url();
 
     // Cookie measurement comes from the pre-dismissal state.

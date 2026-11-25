@@ -4,7 +4,7 @@ import { fail, requireProject } from "@/lib/projects/http";
 
 export const dynamic = "force-dynamic";
 
-/** Finds the page for every included target that has a domain but no URL yet. */
+/** Finds the page for every included target without a URL; earlier failures are retried. */
 export async function POST(_request: NextRequest, { params }: { params: { id: string } }) {
   try {
     await requireProject(params.id);
